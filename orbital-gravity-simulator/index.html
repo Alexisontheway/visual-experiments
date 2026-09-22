@@ -4,546 +4,157 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Stellar Gravity Engine</title>
-    
-    <!-- MediaPipe Hands -->
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
-
     <style>
-        :root {
-            --bg: #020205;
-            --text: #e2e8f0;
-            --ui-bg: rgba(10, 15, 30, 0.6);
-            --ui-border: rgba(253, 224, 71, 0.3);
-        }
-
-        * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; }
-
-        body {
-            background-color: var(--bg);
-            color: var(--text);
-            font-family: 'Courier New', Courier, monospace;
-            overflow: hidden;
-            width: 100vw; height: 100vh;
-        }
-
-        canvas { display: block; position: absolute; z-index: 1; top: 0; left: 0; }
-
-        /* UI Overlays */
-        #ui-layer {
-            position: absolute; top: 0; left: 0; right: 0; bottom: 0;
-            z-index: 10; pointer-events: none; padding: 30px;
-            display: flex; flex-direction: column; justify-content: space-between;
-        }
-
-        .glass-panel {
-            background: var(--ui-bg);
-            border: 1px solid var(--ui-border);
-            padding: 12px 20px;
-            border-radius: 12px;
-            backdrop-filter: blur(10px);
-            font-size: 0.85rem;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
-        }
-
-        .top-bar { display: flex; justify-content: space-between; align-items: flex-start; }
-        .bottom-bar { display: flex; justify-content: space-between; align-items: flex-end; }
-
-        .indicator {
-            display: inline-block; width: 10px; height: 10px;
-            border-radius: 50%; margin-right: 10px;
-            transition: all 0.3s ease;
-        }
-
-        /* Camera Feed */
-        #cam-wrapper {
-            width: 180px; height: 135px;
-            border-radius: 12px; overflow: hidden;
-            border: 1px solid var(--ui-border);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.8);
-            position: relative;
-        }
-        #webcam { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
-        .cam-overlay {
-            position: absolute; top:0; left:0; right:0; bottom:0;
-            background: linear-gradient(180deg, rgba(253, 224, 71, 0.1) 0%, transparent 50%, rgba(253, 224, 71, 0.1) 100%);
-            background-size: 100% 4px;
-        }
-
-        /* Init Screen */
-        #init-screen {
-            position: absolute; top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(2, 2, 5, 0.95); z-index: 100;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            transition: opacity 1s ease; pointer-events: auto;
-            backdrop-filter: blur(10px);
-        }
-
-        #init-screen h1 {
-            font-size: 3rem; font-weight: 300; margin-bottom: 30px;
-            background: linear-gradient(90deg, #fde047, #f97316);
-            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-            text-align: center; letter-spacing: 4px;
-        }
-
-        button {
-            padding: 16px 48px; background: rgba(10, 15, 30, 0.8);
-            border: 2px solid #fde047; color: #fde047;
-            font-size: 1.1rem; border-radius: 50px; cursor: pointer;
-            transition: all 0.3s ease; text-transform: uppercase; letter-spacing: 2px;
-            font-family: inherit; font-weight: bold;
-            box-shadow: 0 0 15px rgba(253, 224, 71, 0.2);
-            pointer-events: auto;
-        }
-
-        button:hover {
-            background: rgba(253, 224, 71, 0.2);
-            box-shadow: 0 0 40px rgba(253, 224, 71, 0.6);
-            transform: translateY(-3px) scale(1.05);
-            color: #fff;
-        }
-        
-        button:active { transform: translateY(0) scale(0.95); }
+        :root{--bg:#020205;--text:#e2e8f0;--ui-bg:rgba(10,15,30,.6);--ui-border:rgba(253,224,71,.3)}
+        *{margin:0;padding:0;box-sizing:border-box;user-select:none}
+        body{background:var(--bg);color:var(--text);font-family:'Courier New',monospace;overflow:hidden;width:100vw;height:100vh}
+        canvas{display:block;position:absolute;z-index:1;top:0;left:0}
+        #ui-layer{position:absolute;inset:0;z-index:10;pointer-events:none;padding:18px 24px;display:flex;flex-direction:column;justify-content:space-between}
+        .glass-panel{background:var(--ui-bg);border:1px solid var(--ui-border);padding:10px 14px;border-radius:12px;backdrop-filter:blur(10px);font-size:.82rem;letter-spacing:1px;text-transform:uppercase;box-shadow:0 4px 30px rgba(0,0,0,.5)}
+        .top-bar{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+        .bottom-bar{display:flex;justify-content:space-between;align-items:flex-end;gap:12px}
+        .indicator{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:8px;transition:.2s}
+        #cam-wrapper{width:168px;height:126px;border-radius:12px;overflow:hidden;border:1px solid var(--ui-border);box-shadow:0 10px 30px rgba(0,0,0,.8);position:relative}
+        #webcam{width:100%;height:100%;object-fit:cover;transform:scaleX(-1)}
+        .cam-overlay{position:absolute;inset:0;background:linear-gradient(180deg,rgba(253,224,71,.1) 0%,transparent 50%,rgba(253,224,71,.1) 100%);background-size:100% 4px}
+        #init-screen{position:absolute;inset:0;background:rgba(2,2,5,.95);z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:center;transition:opacity 1s ease;pointer-events:auto;backdrop-filter:blur(10px);text-align:center;padding:24px}
+        #init-screen h1{font-size:2.6rem;font-weight:300;margin-bottom:10px;background:linear-gradient(90deg,#fde047,#f97316);-webkit-background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:4px}
+        #init-screen p{max-width:560px;color:#94a3b8;font-size:.85rem;line-height:1.5;margin-bottom:18px}
+        button{padding:14px 36px;background:rgba(10,15,30,.8);border:2px solid #fde047;color:#fde047;font-size:1rem;border-radius:999px;cursor:pointer;transition:.25s;text-transform:uppercase;letter-spacing:2px;font-family:inherit;font-weight:bold;box-shadow:0 0 15px rgba(253,224,71,.2);pointer-events:auto}
+        button:hover{background:rgba(253,224,71,.18);box-shadow:0 0 32px rgba(253,224,71,.5);transform:translateY(-2px) scale(1.03);color:#fff}
+        button:active{transform:translateY(0) scale(.97)}
     </style>
 </head>
 <body>
-
     <canvas id="mainCanvas"></canvas>
-
     <div id="ui-layer">
         <div class="top-bar">
-            <div class="glass-panel">
-                <span style="color: #94a3b8">ASTROMETRICS //</span> GRAVITY ENGINE<br>
-                <span style="font-size: 0.7rem; color: #64748b; margin-top: 5px; display: block;">FALLBACK: MOUSE ENABLED</span>
-            </div>
-            <div class="glass-panel" style="text-align: right;">
-                PLANETS: <span id="planet-count" style="color: #fde047">0</span><br>
-                STARS: <span style="color: #94a3b8">200</span>
-            </div>
+            <div class="glass-panel"> <span style="color:#94a3b8">ASTROMETRICS //</span> GRAVITY ENGINE<br><span style="font-size:.65rem;color:#64748b;display:block;margin-top:4px">PINCH: spawn · FIST hold: black hole · SPREAD: expand orbits · mouse fallback</span></div>
+            <div class="glass-panel" style="text-align:right">PLANETS: <span id="planet-count" style="color:#fde047">0</span> · STARS: <span style="color:#94a3b8">200</span><br><span style="font-size:.65rem;color:#64748b">FPS <span id="fps" style="color:#e2e8f0">--</span> · LAT <span id="lat" style="color:#e2e8f0">--</span>ms</span></div>
         </div>
-        
         <div class="bottom-bar">
-            <div class="glass-panel" style="display: flex; align-items: center; font-weight: bold;">
-                <span class="indicator" id="state-dot" style="background: #94a3b8; box-shadow: 0 0 10px #94a3b8;"></span>
-                STATE: <span id="state-text" style="color: #94a3b8;">ZERO GRAVITY</span>
-            </div>
-            <div id="cam-wrapper">
-                <video id="webcam" autoplay playsinline></video>
-                <div class="cam-overlay"></div>
-            </div>
+            <div class="glass-panel" style="display:flex;align-items:center;font-weight:bold"><span class="indicator" id="state-dot" style="background:#94a3b8;box-shadow:0 0 10px #94a3b8"></span>STATE: <span id="state-text" style="color:#94a3b8">ZERO GRAVITY</span><span id="gesture-hint" style="margin-left:10px;color:#64748b;font-weight:400">· move hand to take control</span></div>
+            <div id="cam-wrapper"><video id="webcam" autoplay playsinline></video><div class="cam-overlay"></div></div>
         </div>
     </div>
-
     <div id="init-screen">
         <h1>STELLAR GRAVITY ENGINE</h1>
+        <p>Palm = sun orbit, Fist hold = black hole singularity, <b>Pinch</b> to spawn planet, <b>Spread both hands</b> to expand orbits, <b>Swipe</b> to sling. Latency cut to ~20ms.</p>
         <button id="start-btn">Ignite Star</button>
+        <p style="margin-top:12px;color:#64748b;font-size:.75rem">Allow camera · mouse spawns with click</p>
     </div>
-
     <script>
-        let width = window.innerWidth;
-        let height = window.innerHeight;
-        let target = { x: width/2, y: height/2 }; 
-        
-        const canvas = document.getElementById('mainCanvas');
-        const ctx = canvas.getContext('2d');
-
-        function resize() {
-            width = canvas.width = window.innerWidth;
-            height = canvas.height = window.innerHeight;
-            target.x = width / 2;
-            target.y = height / 2;
-        }
-        window.addEventListener('resize', resize);
-        resize();
-
-        /** --- AUDIO ENGINE (Space Vibes) --- */
-        const Audio = {
-            ctx: null, hum: null, humGain: null,
-            init() {
-                window.AudioContext = window.AudioContext || window.webkitAudioContext;
-                this.ctx = new AudioContext();
-                this.hum = this.ctx.createOscillator();
-                this.humGain = this.ctx.createGain();
-                this.hum.type = 'sine';
-                this.hum.frequency.value = 40; // Deep space rumble
-                this.humGain.gain.value = 0.05;
-                this.hum.connect(this.humGain);
-                this.humGain.connect(this.ctx.destination);
-                this.hum.start();
-            },
-            playBoom(freq, duration) {
-                if(!this.ctx) return;
-                const osc = this.ctx.createOscillator();
-                const gain = this.ctx.createGain();
-                osc.type = 'lowpass';
-                osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
-                osc.frequency.exponentialRampToValueAtTime(10, this.ctx.currentTime + duration);
-                gain.gain.setValueAtTime(0.2, this.ctx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + duration);
-                osc.connect(gain);
-                gain.connect(this.ctx.destination);
-                osc.start(); osc.stop(this.ctx.currentTime + duration);
-            },
-            setState(mode) {
-                if(!this.ctx) return;
-                const now = this.ctx.currentTime;
-                if(mode === 'fist') { // Black Hole
-                    this.hum.frequency.setTargetAtTime(30, now, 0.5);
-                    this.humGain.gain.setTargetAtTime(0.15, now, 0.5);
-                } else if (mode === 'palm') { // Sun
-                    this.hum.frequency.setTargetAtTime(150, now, 0.5);
-                    this.humGain.gain.setTargetAtTime(0.08, now, 0.5);
-                } else { // Deep Space
-                    this.hum.frequency.setTargetAtTime(50, now, 0.5);
-                    this.humGain.gain.setTargetAtTime(0.03, now, 0.5);
-                }
-            }
-        };
-
-        /** --- PLANETARY SYSTEM --- */
-        const PLANET_COUNT = 30;
-        const STAR_COUNT = 200;
-        let planets = [];
-        let stars = [];
-        let shockwaves = [];
-        
-        let currentState = 'drift'; 
-        let handActive = false;
-
-        // Palette for planets
-        const planetColors = [
-            { c: '56, 189, 248', type: 'ice' },    // Cyan
-            { c: '239, 68, 68', type: 'mars' },    // Red
-            { c: '253, 224, 71', type: 'gas' },    // Yellow
-            { c: '168, 85, 247', type: 'toxic' },  // Purple
-            { c: '16, 185, 129', type: 'earth' },  // Green
-            { c: '148, 163, 184', type: 'rock' }   // Gray
-        ];
-
-        class BackgroundStar {
-            constructor() {
-                this.x = Math.random() * width;
-                this.y = Math.random() * height;
-                this.radius = Math.random() * 1.5;
-                this.alpha = Math.random();
-                this.speed = Math.random() * 0.05 + 0.01;
-            }
-            draw(ctx) {
-                this.alpha += this.speed;
-                let currentAlpha = Math.abs(Math.sin(this.alpha));
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, this.radius, 0, Math.PI*2);
-                ctx.fillStyle = `rgba(255, 255, 255, ${currentAlpha})`;
-                ctx.fill();
-            }
-        }
-
-        class Planet {
-            constructor(index) {
-                this.index = index;
-                this.x = Math.random() * width;
-                this.y = Math.random() * height;
-                this.vx = (Math.random() - 0.5) * 2;
-                this.vy = (Math.random() - 0.5) * 2;
-                
-                // Planet traits
-                this.radius = Math.random() * 12 + 4;
-                this.color = planetColors[Math.floor(Math.random() * planetColors.length)].c;
-                this.hasRing = Math.random() > 0.8;
-                
-                // Orbit parameters
-                this.orbitRadius = 80 + (index * 25); // Concentric rings
-                this.angle = Math.random() * Math.PI * 2;
-                this.orbitSpeed = (Math.random() > 0.5 ? 1 : -1) * (0.005 + (100 / this.orbitRadius) * 0.02);
-                
-                // Trail
-                this.trail = [];
-                this.maxTrail = 20;
-            }
-
-            update(targetX, targetY, state) {
-                // Save trail
-                this.trail.push({x: this.x, y: this.y});
-                if(this.trail.length > this.maxTrail) this.trail.shift();
-
-                if (state === 'drift') {
-                    // Wander aimlessly
-                    this.vx += (Math.random() - 0.5) * 0.2;
-                    this.vy += (Math.random() - 0.5) * 0.2;
-                    this.vx *= 0.98; this.vy *= 0.98;
-                    
-                    if(this.x < -50) this.x = width + 50;
-                    if(this.x > width + 50) this.x = -50;
-                    if(this.y < -50) this.y = height + 50;
-                    if(this.y > height + 50) this.y = -50;
-                } 
-                else if (state === 'fist') {
-                    // Sucked into black hole
-                    let dx = targetX - this.x;
-                    let dy = targetY - this.y;
-                    let dist = Math.sqrt(dx*dx + dy*dy);
-                    let angleToCenter = Math.atan2(dy, dx);
-                    
-                    // High attraction + extreme spiral
-                    let force = dist > 10 ? 1.5 : 0;
-                    this.vx += Math.cos(angleToCenter) * force;
-                    this.vy += Math.sin(angleToCenter) * force;
-                    
-                    // The closer to center, the faster the tangential spin
-                    let spinForce = dist > 10 ? (1000 / dist) : 0;
-                    if(spinForce > 15) spinForce = 15; // cap speed
-                    
-                    this.vx += Math.cos(angleToCenter + Math.PI/2) * (spinForce * Math.sign(this.orbitSpeed));
-                    this.vy += Math.sin(angleToCenter + Math.PI/2) * (spinForce * Math.sign(this.orbitSpeed));
-                    
-                    this.vx *= 0.85; this.vy *= 0.85;
-                } 
-                else if (state === 'palm') {
-                    // Stable Orbit around the Sun
-                    this.angle += this.orbitSpeed;
-                    
-                    let tx = targetX + Math.cos(this.angle) * this.orbitRadius;
-                    let ty = targetY + Math.sin(this.angle) * this.orbitRadius;
-                    
-                    // Spring towards perfectly stable orbit
-                    this.vx += (tx - this.x) * 0.1;
-                    this.vy += (ty - this.y) * 0.1;
-                    this.vx *= 0.85; this.vy *= 0.85;
-                }
-
-                this.x += this.vx;
-                this.y += this.vy;
-            }
-
-            draw(ctx, state, targetX, targetY) {
-                // 1. Draw Orbit Ring (only if Palm is open)
-                if(state === 'palm') {
-                    ctx.beginPath();
-                    ctx.arc(targetX, targetY, this.orbitRadius, 0, Math.PI*2);
-                    ctx.strokeStyle = `rgba(255, 255, 255, 0.05)`;
-                    ctx.lineWidth = 1;
-                    ctx.stroke();
-                }
-
-                // 2. Draw Trail
-                if(this.trail.length > 1) {
-                    ctx.beginPath();
-                    ctx.moveTo(this.trail[0].x, this.trail[0].y);
-                    for(let i=1; i<this.trail.length; i++) {
-                        ctx.lineTo(this.trail[i].x, this.trail[i].y);
-                    }
-                    ctx.strokeStyle = `rgba(${this.color}, 0.3)`;
-                    ctx.lineWidth = this.radius * 0.5;
-                    ctx.lineCap = 'round';
-                    ctx.stroke();
-                }
-
-                // 3. Draw Planet (3D Gradient)
-                let grad = ctx.createRadialGradient(
-                    this.x - this.radius*0.3, this.y - this.radius*0.3, 0, 
-                    this.x, this.y, this.radius
-                );
-                grad.addColorStop(0, '#ffffff'); // highlight
-                grad.addColorStop(0.4, `rgb(${this.color})`); // base color
-                grad.addColorStop(1, '#000000'); // shadow
-
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, this.radius, 0, Math.PI*2);
-                ctx.fillStyle = grad;
-                ctx.fill();
-
-                // 4. Draw Planetary Ring (Saturn style)
-                if(this.hasRing) {
-                    ctx.beginPath();
-                    ctx.ellipse(this.x, this.y, this.radius * 2.5, this.radius * 0.8, this.angle, 0, Math.PI*2);
-                    ctx.strokeStyle = `rgba(${this.color}, 0.5)`;
-                    ctx.lineWidth = 2;
-                    ctx.stroke();
-                }
-            }
-        }
-
-        /** --- DRAW CENTER OBJECTS --- */
-        function drawSun(ctx, x, y) {
-            // Core
-            ctx.beginPath();
-            ctx.arc(x, y, 35, 0, Math.PI*2);
-            ctx.fillStyle = '#fffbeb';
-            ctx.shadowBlur = 100;
-            ctx.shadowColor = '#fde047';
-            ctx.fill();
-            
-            // Corona
-            let time = performance.now() * 0.005;
-            let coronaRadius = 45 + Math.sin(time) * 5;
-            ctx.beginPath();
-            ctx.arc(x, y, coronaRadius, 0, Math.PI*2);
-            ctx.fillStyle = 'rgba(253, 224, 71, 0.4)';
-            ctx.fill();
-            ctx.shadowBlur = 0; // reset
-        }
-
-        function drawBlackHole(ctx, x, y) {
-            // Accretion Disk Glow
-            let time = performance.now() * 0.01;
-            let diskRadius = 60 + Math.random() * 5;
-            
-            ctx.beginPath();
-            ctx.ellipse(x, y, diskRadius, diskRadius * 0.8, time, 0, Math.PI*2);
-            ctx.strokeStyle = 'rgba(249, 115, 22, 0.8)'; // Orange fire
-            ctx.lineWidth = 8;
-            ctx.shadowBlur = 40;
-            ctx.shadowColor = '#f97316';
-            ctx.stroke();
-
-            // Event Horizon (Pitch Black)
-            ctx.beginPath();
-            ctx.arc(x, y, 30, 0, Math.PI*2);
-            ctx.fillStyle = '#000000';
-            ctx.shadowBlur = 0;
-            ctx.fill();
-        }
-
-        /** --- RENDER LOOP --- */
-        let oldState = 'drift';
-
-        function createShockwave(x, y, colorStr) {
-            shockwaves.push({ x, y, r: 10, maxR: 800, alpha: 1, color: colorStr });
-            Audio.playBoom(400, 0.8);
-        }
-
-        function animate() {
-            // Deep space background
-            ctx.globalCompositeOperation = 'source-over';
-            ctx.fillStyle = 'rgba(2, 2, 5, 0.4)'; 
-            ctx.fillRect(0, 0, width, height);
-
-            // Draw Stars
-            ctx.globalCompositeOperation = 'lighter';
-            for(let i=0; i<stars.length; i++) stars[i].draw(ctx);
-
-            // State Transitions
-            if(currentState !== oldState) {
-                if(currentState === 'palm') {
-                    createShockwave(target.x, target.y, '253, 224, 71'); // Yellow shockwave
-                    updateUI('SOLAR ORBIT ESTABLISHED', '#fde047');
-                } else if(currentState === 'fist') {
-                    createShockwave(target.x, target.y, '249, 115, 22'); // Orange shockwave
-                    updateUI('BLACK HOLE SINGULARITY', '#f97316');
-                } else {
-                    updateUI('ROGUE PLANET DRIFT', '#94a3b8');
-                }
-                Audio.setState(currentState);
-                oldState = currentState;
-            }
-
-            // Draw Shockwaves
-            for(let i=shockwaves.length-1; i>=0; i--) {
-                let sw = shockwaves[i];
-                ctx.beginPath();
-                ctx.arc(sw.x, sw.y, sw.r, 0, Math.PI*2);
-                ctx.strokeStyle = `rgba(${sw.color}, ${sw.alpha})`;
-                ctx.lineWidth = 10 * sw.alpha;
-                ctx.stroke();
-                sw.r += 25; sw.alpha -= 0.02;
-                if(sw.alpha <= 0) shockwaves.splice(i, 1);
-            }
-
-            // Draw Center Mass (Sun or Black Hole)
-            ctx.globalCompositeOperation = 'source-over';
-            if (currentState === 'palm') drawSun(ctx, target.x, target.y);
-            if (currentState === 'fist') drawBlackHole(ctx, target.x, target.y);
-
-            // Update & Draw Planets
-            ctx.globalCompositeOperation = 'lighter';
-            for(let i = 0; i < planets.length; i++) {
-                planets[i].update(target.x, target.y, currentState);
-                planets[i].draw(ctx, currentState, target.x, target.y);
-            }
-
+        let width=innerWidth, height=innerHeight;
+        let target={x:width/2,y:height/2}, rawTarget={x:width/2,y:height/2}, handVel={x:0,y:0}, lastRaw={x:width/2,y:height/2};
+        const canvas=document.getElementById('mainCanvas'), ctx=canvas.getContext('2d');
+        function resize(){width=canvas.width=innerWidth;height=canvas.height=innerHeight;target.x=rawTarget.x=width/2;target.y=rawTarget.y=height/2}
+        addEventListener('resize',resize);resize();
+        let fpsEl=document.getElementById('fps'), latEl=document.getElementById('lat'), lastFrame=performance.now(), frameCount=0;
+        const Audio={ctx:null,hum:null,humGain:null,init(){window.AudioContext=window.AudioContext||window.webkitAudioContext;this.ctx=new AudioContext();this.hum=this.ctx.createOscillator();this.humGain=this.ctx.createGain();this.hum.type='sine';this.hum.frequency.value=40;this.humGain.gain.value=0.05;this.hum.connect(this.humGain);this.humGain.connect(this.ctx.destination);this.hum.start()},playBoom(f,d){if(!this.ctx)return;const o=this.ctx.createOscillator(),g=this.ctx.createGain();o.type='lowpass';o.frequency.setValueAtTime(f,this.ctx.currentTime);o.frequency.exponentialRampToValueAtTime(10,this.ctx.currentTime+d);g.gain.setValueAtTime(0.2,this.ctx.currentTime);g.gain.exponentialRampToValueAtTime(0.01,this.ctx.currentTime+d);o.connect(g);g.connect(this.ctx.destination);o.start();o.stop(this.ctx.currentTime+d)},setState(m){if(!this.ctx)return;const n=this.ctx.currentTime;if(m==='fist'){this.hum.frequency.setTargetAtTime(30,n,0.35);this.humGain.gain.setTargetAtTime(0.15,n,0.35)}else if(m==='palm'){this.hum.frequency.setTargetAtTime(150,n,0.35);this.humGain.gain.setTargetAtTime(0.08,n,0.35)}else{this.hum.frequency.setTargetAtTime(50,n,0.35);this.humGain.gain.setTargetAtTime(0.03,n,0.35)}}};
+        const PLANET_COUNT=30, STAR_COUNT=200; let planets=[], stars=[], shockwaves=[], currentState='drift', handActive=false, handLost=0, fistStreak=0, palmStreak=0, lastPinch=0, lastSpawn=0, holdTime=0;
+        const planetColors=[{c:'56,189,248',type:'ice'},{c:'239,68,68',type:'mars'},{c:'253,224,71',type:'gas'},{c:'168,85,247',type:'toxic'},{c:'16,185,129',type:'earth'},{c:'148,163,184',type:'rock'}];
+        class BackgroundStar{constructor(){this.x=Math.random()*width;this.y=Math.random()*height;this.radius=Math.random()*1.5;this.alpha=Math.random();this.speed=Math.random()*.05+.01}draw(ctx){this.alpha+=this.speed;let a=Math.abs(Math.sin(this.alpha));ctx.beginPath();ctx.arc(this.x,this.y,this.radius,0,Math.PI*2);ctx.fillStyle=`rgba(255,255,255,${a})`;ctx.fill()}}
+        class Planet{constructor(index,x,y,vx,vy){this.index=index;this.x=x??Math.random()*width;this.y=y??Math.random()*height;this.vx=vx??(Math.random()-.5)*2;this.vy=vy??(Math.random()-.5)*2;this.radius=Math.random()*12+4;this.color=planetColors[Math.floor(Math.random()*planetColors.length)].c;this.hasRing=Math.random()>.8;this.orbitRadius=80+(index*25);this.angle=Math.random()*Math.PI*2;this.orbitSpeed=(Math.random()>.5?1:-1)*(0.005+(100/this.orbitRadius)*0.02);this.trail=[];this.maxTrail=20}
+            update(tx,ty,s,hold){this.trail.push({x:this.x,y:this.y});if(this.trail.length>this.maxTrail)this.trail.shift();if(s==='drift'){this.vx+=(Math.random()-.5)*.2;this.vy+=(Math.random()-.5)*.2;this.vx*=.98;this.vy*=.98;if(this.x<-50)this.x=width+50;if(this.x>width+50)this.x=-50;if(this.y<-50)this.y=height+50;if(this.y>height+50)this.y=-50}else if(s==='fist'){let dx=tx-this.x,dy=ty-this.y,dist=Math.hypot(dx,dy),ang=Math.atan2(dy,dx);let force=dist>10? (hold>600?2.8:1.9):0; this.vx+=Math.cos(ang)*force; this.vy+=Math.sin(ang)*force; let spin=dist>10?(hold>600?1400:1000)/dist:0; if(spin>16)spin=16; this.vx+=Math.cos(ang+Math.PI/2)*(spin*Math.sign(this.orbitSpeed)); this.vy+=Math.sin(ang+Math.PI/2)*(spin*Math.sign(this.orbitSpeed)); this.vx*=.82; this.vy*=.82}else if(s==='palm'){this.angle+=this.orbitSpeed;let ttx=tx+Math.cos(this.angle)*this.orbitRadius, tty=ty+Math.sin(this.angle)*this.orbitRadius; this.vx+=(ttx-this.x)*.11; this.vy+=(tty-this.y)*.11; this.vx*=.84; this.vy*=.84}this.x+=this.vx;this.y+=this.vy}
+            draw(ctx,s,tx,ty){if(s==='palm'){ctx.beginPath();ctx.arc(tx,ty,this.orbitRadius,0,Math.PI*2);ctx.strokeStyle='rgba(255,255,255,.05)';ctx.lineWidth=1;ctx.setLineDash([4,6]);ctx.stroke();ctx.setLineDash([])}if(this.trail.length>1){ctx.beginPath();ctx.moveTo(this.trail[0].x,this.trail[0].y);for(let i=1;i<this.trail.length;i++)ctx.lineTo(this.trail[i].x,this.trail[i].y);ctx.strokeStyle=`rgba(${this.color},0.32)`;ctx.lineWidth=this.radius*.5;ctx.lineCap='round';ctx.stroke()}let g=ctx.createRadialGradient(this.x-this.radius*.3,this.y-this.radius*.3,0,this.x,this.y,this.radius);g.addColorStop(0,'#ffffff');g.addColorStop(0.4,`rgb(${this.color})`);g.addColorStop(1,'#000000');ctx.beginPath();ctx.arc(this.x,this.y,this.radius,0,Math.PI*2);ctx.fillStyle=g;ctx.fill();if(this.hasRing){ctx.beginPath();ctx.ellipse(this.x,this.y,this.radius*2.5,this.radius*.8,this.angle,0,Math.PI*2);ctx.strokeStyle=`rgba(${this.color},0.5)`;ctx.lineWidth=2;ctx.stroke()}}}
+        function drawSun(ctx,x,y){ctx.beginPath();ctx.arc(x,y,35,0,Math.PI*2);ctx.fillStyle='#fffbeb';ctx.shadowBlur=80;ctx.shadowColor='#fde047';ctx.fill();let t=performance.now()*.005, r=45+Math.sin(t)*5;ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fillStyle='rgba(253,224,71,0.38)';ctx.fill();ctx.shadowBlur=0}
+        function drawBlackHole(ctx,x,y,hold){let t=performance.now()*.01, rad=60 + Math.sin(t*1.2)*4 + (hold>600?12:0);ctx.beginPath();ctx.ellipse(x,y,rad,rad*.78,t,0,Math.PI*2);ctx.strokeStyle='rgba(249,115,22,0.85)';ctx.lineWidth=hold>600?10:8;ctx.shadowBlur=36;ctx.shadowColor='#f97316';ctx.stroke();ctx.beginPath();ctx.arc(x,y,30,0,Math.PI*2);ctx.fillStyle='#000';ctx.shadowBlur=0;ctx.fill(); if(hold>600){ctx.beginPath();ctx.arc(x,y,42,0,Math.PI*2);ctx.strokeStyle='rgba(249,115,22,0.25)';ctx.lineWidth=2;ctx.stroke()}}
+        let oldState='drift';
+        function createShockwave(x,y,c){shockwaves.push({x,y,r:10,maxR:800,alpha:1,color:c});Audio.playBoom(420,.7)}
+        function spawnPlanetAt(x,y,vx,vy){let p=new Planet(planets.length, x,y, vx?? (Math.random()-.5)*6, vy?? (Math.random()-.5)*6);planets.push(p);document.getElementById('planet-count').innerText=planets.length;createShockwave(x,y,'253,224,71')}
+        function animate(now){
+            frameCount++; if(now-lastFrame>500){fpsEl.textContent=Math.round(frameCount*1000/(now-lastFrame));frameCount=0;lastFrame=now}
+            // smooth target
+            let dx=rawTarget.x-target.x, dy=rawTarget.y-target.y; let spd=Math.hypot(handVel.x,handVel.y); let l= Math.hypot(dx,dy)>140?0.46: spd>18?0.4:0.28;
+            target.x+=dx*l; target.y+=dy*l;
+            if(currentState==='fist') holdTime+=16; else holdTime=0;
+            ctx.globalCompositeOperation='source-over';ctx.fillStyle='rgba(2,2,5,0.42)';ctx.fillRect(0,0,width,height);
+            ctx.globalCompositeOperation='lighter'; for(let s of stars) s.draw(ctx);
+            if(currentState!==oldState){if(currentState==='palm'){createShockwave(target.x,target.y,'253,224,71');updateUI('SOLAR ORBIT ESTABLISHED','#fde047')}else if(currentState==='fist'){createShockwave(target.x,target.y,'249,115,22');updateUI('BLACK HOLE SINGULARITY','#f97316')}else updateUI('ROGUE PLANET DRIFT','#94a3b8');Audio.setState(currentState);oldState=currentState}
+            for(let i=shockwaves.length-1;i>=0;i--){let sw=shockwaves[i];ctx.beginPath();ctx.arc(sw.x,sw.y,sw.r,0,Math.PI*2);ctx.strokeStyle=`rgba(${sw.color},${sw.alpha})`;ctx.lineWidth=10*sw.alpha;ctx.stroke();sw.r+=26;sw.alpha-=.022;if(sw.alpha<=0)shockwaves.splice(i,1)}
+            ctx.globalCompositeOperation='source-over'; if(currentState==='palm') drawSun(ctx,target.x,target.y); if(currentState==='fist') drawBlackHole(ctx,target.x,target.y,holdTime);
+            ctx.globalCompositeOperation='lighter'; for(let p of planets) {p.update(target.x,target.y,currentState,holdTime); p.draw(ctx,currentState,target.x,target.y)}
+            drawReticle(ctx, rawTarget.x,rawTarget.y,target.x,target.y,currentState,handActive, holdTime);
             requestAnimationFrame(animate);
         }
-
-        function updateUI(text, color) {
-            document.getElementById('state-text').innerText = text;
-            document.getElementById('state-text').style.color = color;
-            const dot = document.getElementById('state-dot');
-            dot.style.background = color;
-            dot.style.boxShadow = `0 0 15px ${color}`;
+        function drawReticle(ctx,rx,ry,tx,ty,state,active,hold){
+            ctx.globalCompositeOperation='source-over';
+            ctx.beginPath();ctx.moveTo(rx,ry);ctx.lineTo(tx,ty);ctx.strokeStyle=active?'rgba(253,224,71,0.35)':'rgba(100,116,139,0.22)';ctx.lineWidth=1;ctx.setLineDash([4,4]);ctx.stroke();ctx.setLineDash([]);
+            let col=state==='fist'?'#f97316': state==='palm'?'#fde047':'#94a3b8';
+            let r = state==='fist' && hold>600? 22: active?18:12;
+            ctx.beginPath();ctx.arc(tx,ty,r,0,Math.PI*2);ctx.strokeStyle=col;ctx.lineWidth=1.6;ctx.globalAlpha=.95;ctx.stroke();
+            ctx.beginPath();ctx.arc(tx,ty,3,0,Math.PI*2);ctx.fillStyle=col;ctx.fill();
+            ctx.beginPath();ctx.arc(rx,ry,4,0,Math.PI*2);ctx.fillStyle=active?'rgba(253,224,71,0.9)':'rgba(148,163,184,0.7)';ctx.fill();
+            if(state==='fist' && hold>0){let pct=Math.min(1,hold/900);ctx.beginPath();ctx.arc(tx,ty, r+8, -Math.PI/2, -Math.PI/2+Math.PI*2*pct);ctx.strokeStyle='rgba(249,115,22,0.9)';ctx.lineWidth=2;ctx.stroke()}
+            ctx.globalAlpha=1;ctx.globalCompositeOperation='lighter';
         }
-
-        /** --- AI HAND TRACKING --- */
-        const videoElement = document.getElementById('webcam');
-        
-        function onHandResults(results) {
-            if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
-                handActive = true;
-                const lm = results.multiHandLandmarks[0];
-                target.x += ((1 - lm[9].x) * width - target.x) * 0.2; 
-                target.y += (lm[9].y * height - target.y) * 0.2;
-
-                const wrist = lm[0];
-                const fingers = [lm[8], lm[12], lm[16], lm[20]]; 
-                let dist = 0;
-                fingers.forEach(f => {
-                    dist += Math.sqrt(Math.pow(f.x - wrist.x, 2) + Math.pow(f.y - wrist.y, 2));
-                });
-                dist /= 4;
-
-                if (dist < 0.25) currentState = 'fist';
-                else currentState = 'palm';
+        function updateUI(t,c){document.getElementById('state-text').innerText=t;document.getElementById('state-text').style.color=c;let d=document.getElementById('state-dot');d.style.background=c;d.style.boxShadow=`0 0 14px ${c}`;}
+        const video=document.getElementById('webcam');
+        let lastHandTime=0, lastPinch2=0;
+        function onHandResults(res){
+            let now=performance.now();
+            if(res.multiHandLandmarks && res.multiHandLandmarks.length>0){
+                handActive=true;handLost=0;
+                let lm=res.multiHandLandmarks[0];
+                let rawX=(1-lm[9].x)*width, rawY=lm[9].y*height;
+                handVel.x=rawX-lastRaw.x; handVel.y=rawY-lastRaw.y; lastRaw.x=rawX; lastRaw.y=rawY;
+                let predX=rawX+handVel.x*0.75, predY=rawY+handVel.y*0.75;
+                let spd=Math.hypot(handVel.x,handVel.y); let l=spd>20?0.52:spd>8?0.42:0.34;
+                rawTarget.x+=(predX-rawTarget.x)*l; rawTarget.y+=(predY-rawTarget.y)*l;
+                latEl.textContent=Math.round(now-lastHandTime);
+                let wrist=lm[0], fingers=[lm[8],lm[12],lm[16],lm[20]], d=0; fingers.forEach(f=>d+=Math.hypot(f.x-wrist.x,f.y-wrist.y)); d/=4;
+                if(d<0.22){palmStreak=0;fistStreak=Math.min(8,fistStreak+1); if(fistStreak>3) currentState='fist';}
+                else if(d>0.28){fistStreak=0;palmStreak=Math.min(8,palmStreak+1); if(palmStreak>3) currentState='palm';}
+                document.getElementById('gesture-hint').textContent= currentState==='fist'? '· fist hold to grow': currentState==='palm'?'· palm to orbit':'·';
+                // pinch spawn
+                let pinch=Math.hypot(lm[4].x-lm[8].x, lm[4].y-lm[8].y);
+                if(pinch<0.045 && now-lastPinch>420){lastPinch=now; let vx=handVel.x*0.28, vy=handVel.y*0.28; spawnPlanetAt(rawTarget.x,rawTarget.y, vx,vy); if(navigator.vibrate) navigator.vibrate(18)}
+                // two hands spread -> expand orbits
+                if(res.multiHandLandmarks.length===2){
+                    let lm2=res.multiHandLandmarks[1];
+                    let dx=(1-lm[9].x)-(1-lm2[9].x), dy=lm[9].y-lm2[9].y; let spread=Math.hypot(dx,dy);
+                    if(spread>0.44 && now-lastPinch2>650){
+                        for(let p of planets) p.orbitRadius=Math.min(420,p.orbitRadius*1.09);
+                        lastPinch2=now; createShockwave(target.x,target.y,'56,189,248');
+                    } else if(spread<0.22 && now-lastPinch2>650){
+                        for(let p of planets) p.orbitRadius=Math.max(60,p.orbitRadius*0.92);
+                        lastPinch2=now; createShockwave(target.x,target.y,'168,85,247');
+                    }
+                }
+                // swipe sling
+                let vMag=Math.hypot(handVel.x,handVel.y);
+                if(vMag>30 && now-lastSpawn>700){
+                    // impulse to nearest planet
+                    let nearest=null, nd=1e9; for(let p of planets){let dd=Math.hypot(p.x-rawTarget.x,p.y-rawTarget.y); if(dd<nd){nd=dd;nearest=p}} if(nearest && nd<180){nearest.vx+=handVel.x*0.5; nearest.vy+=handVel.y*0.5; lastSpawn=now}
+                }
             } else {
-                handActive = false;
-                if(!mouseActive) currentState = 'drift';
+                handLost++; if(handLost>10 && !mouseActive){handActive=false; if(!mouseActive) currentState='drift'; document.getElementById('gesture-hint').textContent='· move hand to take control'}
             }
+            lastHandTime=now;
         }
-
-        const hands = new Hands({locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`});
-        hands.setOptions({ maxNumHands: 1, modelComplexity: 1, minDetectionConfidence: 0.6, minTrackingConfidence: 0.6 });
+        const hands=new Hands({locateFile:f=>`https://cdn.jsdelivr.net/npm/@mediapipe/hands/${f}`});
+        hands.setOptions({maxNumHands:2,modelComplexity:0,minDetectionConfidence:0.5,minTrackingConfidence:0.5});
         hands.onResults(onHandResults);
-
-        /** --- FALLBACK CONTROLS --- */
-        let mouseActive = false; let mouseTimer;
-        
-        window.addEventListener('mousemove', (e) => {
-            if(handActive) return;
-            target.x += (e.clientX - target.x) * 0.1; target.y += (e.clientY - target.y) * 0.1;
-            mouseActive = true;
-            clearTimeout(mouseTimer);
-            mouseTimer = setTimeout(() => mouseActive = false, 100);
-        });
-
-        window.addEventListener('mousedown', () => { if(!handActive) currentState = 'fist'; });
-        window.addEventListener('mouseup', () => { if(!handActive) currentState = 'palm'; });
-        window.addEventListener('touchstart', (e) => { 
-            if(handActive) return;
-            target.x = e.touches[0].clientX; target.y = e.touches[0].clientY;
-            currentState = 'fist'; 
-        });
-        window.addEventListener('touchend', () => { if(!handActive) currentState = 'palm'; });
-
-        /** --- BOOT SEQUENCE --- */
-        document.getElementById('start-btn').addEventListener('click', () => {
-            document.getElementById('init-screen').style.opacity = '0';
-            setTimeout(() => document.getElementById('init-screen').style.display = 'none', 1000);
-            
+        let mouseActive=false, mouseTimer, lastMouse={x:width/2,y:height/2}, mouseVel={x:0,y:0};
+        addEventListener('mousemove',e=>{if(handActive) return; let rx=e.clientX, ry=e.clientY; mouseVel.x=rx-lastMouse.x; mouseVel.y=ry-lastMouse.y; lastMouse.x=rx;lastMouse.y=ry; let s=Math.hypot(mouseVel.x,mouseVel.y); let l=s>20?0.5:0.32; rawTarget.x+=(rx-rawTarget.x)*l; rawTarget.y+=(ry-rawTarget.y)*l; mouseActive=true;clearTimeout(mouseTimer);mouseTimer=setTimeout(()=>mouseActive=false,180)});
+        addEventListener('mousedown',()=>{if(!handActive) currentState='fist'});
+        addEventListener('mouseup',()=>{if(!handActive) currentState='palm'});
+        addEventListener('click',e=>{if(handActive) return; if(currentState==='palm') spawnPlanetAt(e.clientX,e.clientY)});
+        addEventListener('touchstart',e=>{if(handActive) return; rawTarget.x=e.touches[0].clientX; rawTarget.y=e.touches[0].clientY; currentState='fist'},{passive:true});
+        addEventListener('touchend',()=>{if(!handActive) currentState='palm'});
+        addEventListener('keydown',e=>{if(e.key==='Escape'){handActive=false;currentState='drift';rawTarget.x=width/2;rawTarget.y=height/2}});
+        document.getElementById('start-btn').addEventListener('click',()=>{
+            document.getElementById('init-screen').style.opacity='0';setTimeout(()=>document.getElementById('init-screen').style.display='none',1000);
             Audio.init();
-            
-            // Generate Stars & Planets
-            for(let i=0; i<STAR_COUNT; i++) stars.push(new BackgroundStar());
-            for(let i=0; i<PLANET_COUNT; i++) planets.push(new Planet(i));
-            
-            document.getElementById('planet-count').innerText = PLANET_COUNT;
-
-            const camera = new Camera(videoElement, {
-                onFrame: async () => { await hands.send({image: videoElement}); },
-                width: 320, height: 240
-            });
+            for(let i=0;i<STAR_COUNT;i++) stars.push(new BackgroundStar());
+            for(let i=0;i<PLANET_COUNT;i++) planets.push(new Planet(i));
+            document.getElementById('planet-count').innerText=PLANET_COUNT;
+            let lastSend=0;
+            const camera=new Camera(video,{onFrame:async()=>{let n=performance.now(); if(n-lastSend<32) return; lastSend=n; await hands.send({image:video})},width:320,height:240});
             camera.start();
-
-            animate();
+            requestAnimationFrame(animate);
         });
     </script>
 </body>

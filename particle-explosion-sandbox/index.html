@@ -4,477 +4,205 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Big Bang Thrower</title>
-    
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
-
     <style>
-        :root {
-            --bg: #020205;
-            --ui-bg: rgba(10, 15, 30, 0.7);
-            --ui-border: rgba(239, 68, 68, 0.4);
-        }
-
-        * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; }
-
-        body {
-            background-color: var(--bg);
-            color: #fff;
-            font-family: 'Courier New', Courier, monospace;
-            overflow: hidden;
-            width: 100vw; height: 100vh;
-        }
-
-        canvas { display: block; position: absolute; z-index: 1; top: 0; left: 0; }
-
-        #ui-layer {
-            position: absolute; top: 0; left: 0; right: 0; bottom: 0;
-            z-index: 10; pointer-events: none; padding: 30px;
-            display: flex; flex-direction: column; justify-content: space-between;
-        }
-
-        .glass-panel {
-            background: var(--ui-bg); border: 1px solid var(--ui-border);
-            padding: 12px 20px; border-radius: 12px; backdrop-filter: blur(10px);
-            font-size: 0.85rem; letter-spacing: 1px; text-transform: uppercase;
-            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
-        }
-
-        .top-bar { display: flex; justify-content: space-between; align-items: flex-start; }
-        .bottom-bar { display: flex; justify-content: space-between; align-items: flex-end; }
-
-        #cam-wrapper {
-            width: 180px; height: 135px; border-radius: 12px; overflow: hidden;
-            border: 1px solid var(--ui-border); box-shadow: 0 10px 30px rgba(0,0,0,0.8);
-            position: relative;
-        }
-        #webcam { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
-
-        #init-screen {
-            position: absolute; top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(2, 2, 5, 0.95); z-index: 100;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            transition: opacity 0.5s ease; pointer-events: auto; backdrop-filter: blur(10px);
-        }
-
-        h1 {
-            font-size: 3rem; margin-bottom: 10px;
-            background: linear-gradient(90deg, #fde047, #ef4444);
-            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-            text-align: center; letter-spacing: 4px;
-        }
-        p.subtitle { color: #ef4444; margin-bottom: 40px; letter-spacing: 2px; }
-
-        button {
-            padding: 16px 48px; background: rgba(10, 15, 30, 0.8);
-            border: 2px solid #ef4444; color: #ef4444; font-size: 1.1rem;
-            border-radius: 50px; cursor: pointer; transition: all 0.3s ease;
-            text-transform: uppercase; letter-spacing: 2px; font-weight: bold;
-            box-shadow: 0 0 15px rgba(239, 68, 68, 0.3); pointer-events: auto;
-        }
-
-        button:hover {
-            background: rgba(239, 68, 68, 0.2); box-shadow: 0 0 40px rgba(239, 68, 68, 0.8);
-            transform: translateY(-3px) scale(1.05); color: #fff;
-        }
-
-        /* Screen Flash for Big Bang */
-        #flash {
-            position: absolute; top: 0; left: 0; right: 0; bottom: 0;
-            background: white; z-index: 50; opacity: 0; pointer-events: none;
-        }
+        :root{--bg:#020205;--ui-bg:rgba(10,15,30,.7);--ui-border:rgba(239,68,68,.4)}
+        *{margin:0;padding:0;box-sizing:border-box;user-select:none}
+        body{background:var(--bg);color:#fff;font-family:'Courier New',monospace;overflow:hidden;width:100vw;height:100vh}
+        canvas{display:block;position:absolute;z-index:1;top:0;left:0}
+        #ui-layer{position:absolute;inset:0;z-index:10;pointer-events:none;padding:18px 24px;display:flex;flex-direction:column;justify-content:space-between}
+        .glass-panel{background:var(--ui-bg);border:1px solid var(--ui-border);padding:10px 14px;border-radius:12px;backdrop-filter:blur(10px);font-size:.82rem;letter-spacing:1px;text-transform:uppercase;box-shadow:0 4px 30px rgba(0,0,0,.5)}
+        .top-bar{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+        .bottom-bar{display:flex;justify-content:space-between;align-items:flex-end;gap:12px}
+        #cam-wrapper{width:168px;height:126px;border-radius:12px;overflow:hidden;border:1px solid var(--ui-border);box-shadow:0 10px 30px rgba(0,0,0,.8);position:relative}
+        #webcam{width:100%;height:100%;object-fit:cover;transform:scaleX(-1)}
+        #init-screen{position:absolute;inset:0;background:rgba(2,2,5,.95);z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:center;transition:opacity .5s ease;pointer-events:auto;backdrop-filter:blur(10px);text-align:center;padding:24px}
+        h1{font-size:2.8rem;margin-bottom:8px;background:linear-gradient(90deg,#fde047,#ef4444);-webkit-background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:4px}
+        p.subtitle{color:#ef4444;margin-bottom:18px;letter-spacing:2px;font-size:.85rem}
+        button{padding:14px 36px;background:rgba(10,15,30,.8);border:2px solid #ef4444;color:#ef4444;font-size:1rem;border-radius:999px;cursor:pointer;transition:.25s;text-transform:uppercase;letter-spacing:2px;font-weight:bold;box-shadow:0 0 15px rgba(239,68,68,.3);pointer-events:auto}
+        button:hover{background:rgba(239,68,68,.18);box-shadow:0 0 32px rgba(239,68,68,.6);transform:translateY(-2px) scale(1.03);color:#fff}
+        button:active{transform:translateY(0) scale(.97)}
+        #flash{position:absolute;inset:0;background:white;z-index:50;opacity:0;pointer-events:none}
+        #charge-bar{width:120px;height:6px;background:rgba(255,255,255,.12);border-radius:999px;overflow:hidden;margin-top:6px}
+        #charge-fill{height:100%;width:0;background:linear-gradient(90deg,#fde047,#ef4444);transition:width .08s}
     </style>
 </head>
 <body>
-
     <div id="flash"></div>
     <canvas id="mainCanvas"></canvas>
-
     <div id="ui-layer">
         <div class="top-bar">
-            <div class="glass-panel">
-                <span style="color: #ef4444">WEAPON //</span> THE SUN<br>
-                <span style="font-size: 0.7rem; color: #94a3b8; display: block; margin-top: 5px;">
-                    FIST: Grab & Hold | PALM: Throw
-                </span>
-            </div>
-            <div class="glass-panel" style="text-align: right;">
-                BIG BANGS: <span id="bang-count" style="color: #ef4444">0</span>
-            </div>
+            <div class="glass-panel"> <span style="color:#ef4444">WEAPON //</span> THE SUN<br><span style="font-size:.65rem;color:#94a3b8;display:block;margin-top:4px">FIST hold=charge · release=throw · PINCH=small bang · PALM=push</span><div id="charge-bar"><div id="charge-fill"></div></div></div>
+            <div class="glass-panel" style="text-align:right">BIG BANGS: <span id="bang-count" style="color:#ef4444">0</span><br><span style="font-size:.65rem;color:#64748b">FPS <span id="fps" style="color:#e2e8f0">--</span> · LAT <span id="lat" style="color:#e2e8f0">--</span>ms</span></div>
         </div>
-        
         <div class="bottom-bar">
-            <div class="glass-panel" id="status-panel" style="color: #fde047; font-weight: bold;">
-                WAITING FOR HAND...
-            </div>
-            <div id="cam-wrapper">
-                <video id="webcam" autoplay playsinline></video>
-            </div>
+            <div class="glass-panel" id="status-panel" style="color:#fde047;font-weight:bold">WAITING FOR HAND... <span id="gesture-hint" style="color:#64748b;font-weight:400">· fist to grab</span></div>
+            <div id="cam-wrapper"><video id="webcam" autoplay playsinline></video></div>
         </div>
     </div>
-
     <div id="init-screen">
         <h1>THE BIG BANG</h1>
-        <p class="subtitle">Throw the sun. Destroy the universe.</p>
+        <p class="subtitle">Throw the sun. Hold longer = bigger boom. Try palm push & pinch pop.</p>
         <button id="start-btn">Start Simulation</button>
+        <p style="margin-top:12px;color:#64748b;font-size:.75rem">Allow camera · mouse hold+release also throws · <b>double-fist</b> = instant bang</p>
     </div>
-
     <script>
-        const canvas = document.getElementById('mainCanvas');
-        const ctx = canvas.getContext('2d');
-        const flashOverlay = document.getElementById('flash');
-        
-        let width = window.innerWidth;
-        let height = window.innerHeight;
-        window.addEventListener('resize', () => {
-            width = canvas.width = window.innerWidth;
-            height = canvas.height = window.innerHeight;
-        });
-        width = canvas.width = window.innerWidth;
-        height = canvas.height = window.innerHeight;
-
-        /** --- AUDIO SYNTHESIS --- */
-        const Audio = {
-            ctx: null,
-            init() {
-                window.AudioContext = window.AudioContext || window.webkitAudioContext;
-                this.ctx = new AudioContext();
-            },
-            playBigBang() {
-                if(!this.ctx) return;
-                const now = this.ctx.currentTime;
-                
-                // Cinematic Bass Drop
-                const osc = this.ctx.createOscillator();
-                const gain = this.ctx.createGain();
-                osc.type = 'sine';
-                osc.frequency.setValueAtTime(150, now);
-                osc.frequency.exponentialRampToValueAtTime(10, now + 2);
-                gain.gain.setValueAtTime(1, now);
-                gain.gain.exponentialRampToValueAtTime(0.01, now + 3);
-                osc.connect(gain); gain.connect(this.ctx.destination);
-                osc.start(now); osc.stop(now + 3);
-
-                // White Noise Explosion Crunch
-                const bufferSize = this.ctx.sampleRate * 2; // 2 seconds
-                const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
-                const data = buffer.getChannelData(0);
-                for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
-                
-                const noise = this.ctx.createBufferSource();
-                noise.buffer = buffer;
-                const noiseFilter = this.ctx.createBiquadFilter();
-                noiseFilter.type = 'lowpass';
-                noiseFilter.frequency.setValueAtTime(2000, now);
-                noiseFilter.frequency.exponentialRampToValueAtTime(50, now + 1.5);
-                
-                const noiseGain = this.ctx.createGain();
-                noiseGain.gain.setValueAtTime(0.8, now);
-                noiseGain.gain.exponentialRampToValueAtTime(0.01, now + 2);
-                
-                noise.connect(noiseFilter); noiseFilter.connect(noiseGain); noiseGain.connect(this.ctx.destination);
-                noise.start(now);
-            }
-        };
-
-        /** --- PHYSICS ENTITIES --- */
-        let gameActive = true;
-        let screenShake = 0;
-        let bangCount = 0;
-
-        // Player Planet (The Sun)
-        const player = {
-            x: width/2, y: height/2, vx: 0, vy: 0, radius: 40,
-            state: 'idle', // idle, held, thrown
-            history: []    // Tracks positions to calculate throw velocity
-        };
-
-        // Target Planets
-        let targets = [];
-        const colors = ['#38bdf8', '#a855f7', '#10b981', '#f43f5e', '#64748b'];
-
-        function spawnTargets() {
-            targets = [];
-            for(let i=0; i<8; i++) {
-                targets.push({
-                    x: Math.random() * width, y: Math.random() * height,
-                    vx: (Math.random()-0.5)*2, vy: (Math.random()-0.5)*2,
-                    radius: Math.random() * 25 + 15,
-                    color: colors[Math.floor(Math.random() * colors.length)]
-                });
-            }
-        }
+        const canvas=document.getElementById('mainCanvas'), ctx=canvas.getContext('2d'), flashOverlay=document.getElementById('flash');
+        let width=innerWidth, height=innerHeight;
+        addEventListener('resize',()=>{width=canvas.width=innerWidth;height=canvas.height=innerHeight});
+        width=canvas.width=innerWidth;height=canvas.height=innerHeight;
+        let fpsEl=document.getElementById('fps'), latEl=document.getElementById('lat'), lastFrame=performance.now(), frameCount=0;
+        const Audio={ctx:null,init(){window.AudioContext=window.AudioContext||window.webkitAudioContext;this.ctx=new AudioContext()},playBigBang(power=1){if(!this.ctx)return;const now=this.ctx.currentTime;const o=this.ctx.createOscillator(),g=this.ctx.createGain();o.type='sine';o.frequency.setValueAtTime(150*power,now);o.frequency.exponentialRampToValueAtTime(10,now+1.6);g.gain.setValueAtTime(0.9,now);g.gain.exponentialRampToValueAtTime(0.01,now+2.2);o.connect(g);g.connect(this.ctx.destination);o.start(now);o.stop(now+2.2);const bs=this.ctx.sampleRate*1.4, buf=this.ctx.createBuffer(1,bs,this.ctx.sampleRate), d=buf.getChannelData(0);for(let i=0;i<bs;i++) d[i]=Math.random()*2-1;const n=this.ctx.createBufferSource();n.buffer=buf;const f=this.ctx.createBiquadFilter();f.type='lowpass';f.frequency.setValueAtTime(2000,now);f.frequency.exponentialRampToValueAtTime(60,now+1.2);const ng=this.ctx.createGain();ng.gain.setValueAtTime(0.7*power,now);ng.gain.exponentialRampToValueAtTime(0.01,now+1.6);n.connect(f);f.connect(ng);ng.connect(this.ctx.destination);n.start(now)}};
+        let gameActive=true, screenShake=0, bangCount=0;
+        const player={x:width/2,y:height/2,vx:0,vy:0,radius:40,state:'idle',history:[],charge:0,holdStart:0};
+        let targets=[]; const colors=['#38bdf8','#a855f7','#10b981','#f43f5e','#64748b'];
+        function spawnTargets(){targets=[];for(let i=0;i<8;i++) targets.push({x:Math.random()*width,y:Math.random()*height,vx:(Math.random()-.5)*2,vy:(Math.random()-.5)*2,radius:Math.random()*25+15,color:colors[Math.floor(Math.random()*colors.length)]})}
         spawnTargets();
-
-        // Explosion Particles
-        let particles = [];
-        let shockwaves = [];
-        let stars = Array.from({length: 150}, () => ({
-            x: Math.random()*width, y: Math.random()*height, 
-            r: Math.random()*1.5, alpha: Math.random()
-        }));
-
-        /** --- BIG BANG EVENT --- */
-        function triggerBigBang(x, y) {
-            gameActive = false; // Pause normal logic
-            bangCount++;
-            document.getElementById('bang-count').innerText = bangCount;
-            document.getElementById('status-panel').innerText = "UNIVERSAL REBOOT...";
-            document.getElementById('status-panel').style.color = "#fff";
-
-            // Audio & Screen Flash
-            Audio.playBigBang();
-            flashOverlay.style.transition = 'none';
-            flashOverlay.style.opacity = '1';
-            setTimeout(() => {
-                flashOverlay.style.transition = 'opacity 2s ease-out';
-                flashOverlay.style.opacity = '0';
-            }, 50);
-
-            screenShake = 50; // Intense camera shake
-
-            // Spawn massive shockwaves
-            shockwaves.push({x, y, r: 10, dr: 30, alpha: 1});
-            shockwaves.push({x, y, r: 10, dr: 15, alpha: 1});
-
-            // Spawn 300 debris particles
-            particles = [];
-            for(let i=0; i<300; i++) {
-                let angle = Math.random() * Math.PI * 2;
-                let speed = Math.random() * 25 + 5;
-                particles.push({
-                    x: x, y: y,
-                    vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed,
-                    r: Math.random() * 4 + 1,
-                    color: colors[Math.floor(Math.random() * colors.length)],
-                    life: 1
-                });
-            }
-
-            // Hide planets instantly
-            targets = [];
-            player.state = 'hidden';
-
-            // Reset universe after 3 seconds
-            setTimeout(() => {
-                spawnTargets();
-                player.state = 'idle';
-                player.x = width/2; player.y = height/2;
-                player.vx = 0; player.vy = 0;
-                gameActive = true;
-                document.getElementById('status-panel').innerText = "SYSTEM RESTORED";
-                document.getElementById('status-panel').style.color = "#fde047";
-            }, 3000);
+        let particles=[], shockwaves=[], stars=Array.from({length:150},()=>({x:Math.random()*width,y:Math.random()*height,r:Math.random()*1.5,alpha:Math.random()}));
+        function triggerBigBang(x,y,power=1){
+            gameActive=false;bangCount++;document.getElementById('bang-count').innerText=bangCount;
+            document.getElementById('status-panel').innerText=`BOOM ×${power.toFixed(1)} — REBOOT...`;document.getElementById('status-panel').style.color='#fff';
+            Audio.playBigBang(power); flashOverlay.style.transition='none';flashOverlay.style.opacity='1'; setTimeout(()=>{flashOverlay.style.transition='opacity 1.6s ease-out';flashOverlay.style.opacity='0'},40);
+            screenShake= 18 + power*34;
+            let rings = power>1.4?3:2; for(let i=0;i<rings;i++) shockwaves.push({x,y,r:10+i*18,dr: 18 + power*10,alpha:1});
+            particles=[]; let count= 120 + Math.round(power*180); for(let i=0;i<count;i++){let a=Math.random()*Math.PI*2, s=Math.random()* (14 + power*12)+4; particles.push({x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s,r:Math.random()*3+1,color:colors[Math.floor(Math.random()*colors.length)],life:1,dec:0.008+Math.random()*0.012})}
+            targets=[]; player.state='hidden'; player.charge=0;
+            document.getElementById('charge-fill').style.width='0%';
+            setTimeout(()=>{spawnTargets();player.state='idle';player.x=width/2;player.y=height/2;player.vx=0;player.vy=0;gameActive=true;document.getElementById('status-panel').innerText='SYSTEM RESTORED';document.getElementById('status-panel').style.color='#fde047'}, 2200);
         }
-
-        /** --- HAND / MOUSE INPUT --- */
-        let input = { x: width/2, y: height/2, active: false }; // active = FIST or CLICK
-
-        function handleInput() {
+        let input={x:width/2,y:height/2,active:false,rawX:width/2,rawY:height/2}, handVel={x:0,y:0}, lastRaw={x:width/2,y:height/2}, handActive=false, handLost=0, fistStreak=0, palmStreak=0, lastPinch=0;
+        let mouseHover=false;
+        function handleInput(){
             if(!gameActive) return;
-
-            // Track position history for throwing physics
-            player.history.push({x: input.x, y: input.y});
-            if(player.history.length > 5) player.history.shift(); // Keep last 5 frames
-
-            if(input.active) {
-                // HOLDING
-                player.state = 'held';
-                // Move sun smoothly to hand
-                player.x += (input.x - player.x) * 0.4;
-                player.y += (input.y - player.y) * 0.4;
-                document.getElementById('status-panel').innerText = "SUN GRABBED (READY TO THROW)";
-                document.getElementById('status-panel').style.color = "#f97316";
-            } 
-            else if (player.state === 'held' && !input.active) {
-                // THROW EVENT (Triggered on release)
-                player.state = 'thrown';
-                // Calculate velocity from history (Delta X/Y of oldest vs newest frame)
-                let old = player.history[0];
-                let vx = (input.x - old.x) * 0.5; // Throw multiplier
-                let vy = (input.y - old.y) * 0.5;
-                
-                // Cap speed so it doesn't break physics
-                let speed = Math.sqrt(vx*vx + vy*vy);
-                if(speed > 40) { vx = (vx/speed)*40; vy = (vy/speed)*40; }
-                
-                player.vx = vx;
-                player.vy = vy;
-                
-                document.getElementById('status-panel').innerText = "PROJECTILE LAUNCHED!";
-                document.getElementById('status-panel').style.color = "#ef4444";
+            // raw->input smoothing already done in handResults / mouse; here just spring player when held
+            player.history.push({x:input.x,y:input.y}); if(player.history.length>6) player.history.shift();
+            if(input.active){
+                if(player.state!=='held' && player.state!=='hidden'){player.holdStart=performance.now()}
+                player.state='held';
+                // charge builds while held (0..1.5)
+                player.charge=Math.min(1.5, (performance.now()-player.holdStart)/900);
+                document.getElementById('charge-fill').style.width= Math.round(player.charge/1.5*100)+'%';
+                // snappy follow with prediction
+                player.x+=(input.x - player.x)*0.42; player.y+=(input.y - player.y)*0.42;
+                let pct=Math.round(player.charge/1.5*100);
+                document.getElementById('status-panel').innerText=`SUN GRABBED — CHARGE ${pct}%`; document.getElementById('status-panel').style.color='#f97316';
+                document.getElementById('gesture-hint').textContent='· release to throw';
+            } else if(player.state==='held' && !input.active){
+                player.state='thrown';
+                let old=player.history[0]||{x:input.x,y:input.y};
+                let vx=(input.x-old.x)*0.62, vy=(input.y-old.y)*0.62;
+                let spd=Math.hypot(vx,vy);
+                // charge adds power
+                let power= 0.6 + player.charge*1.0 + Math.min(1, spd/30)*0.6;
+                if(spd>42){vx=vx/spd*42; vy=vy/spd*42}
+                // if almost no movement, give random nudge based on charge
+                if(spd<4){let ang=Math.random()*Math.PI*2; vx=Math.cos(ang)*(6+power*8); vy=Math.sin(ang)*(6+power*8)}
+                player.vx=vx; player.vy=vy;
+                player.chargePower=power;
+                document.getElementById('status-panel').innerText=`LAUNCHED — PWR ${power.toFixed(1)}`; document.getElementById('status-panel').style.color='#ef4444';
+                document.getElementById('charge-fill').style.width='0%';
+                player.charge=0;
             }
         }
-
-        /** --- RENDER LOOP --- */
-        function drawSun(x, y) {
-            let time = performance.now() * 0.005;
-            let pulse = 40 + Math.sin(time) * 5;
-            
-            ctx.beginPath();
-            ctx.arc(x, y, pulse, 0, Math.PI*2);
-            ctx.fillStyle = '#fde047';
-            ctx.shadowBlur = 60; ctx.shadowColor = '#f97316';
-            ctx.fill(); ctx.shadowBlur = 0;
-            
-            // Core
-            ctx.beginPath();
-            ctx.arc(x, y, 30, 0, Math.PI*2);
-            ctx.fillStyle = '#fff';
-            ctx.fill();
-        }
-
-        function animate() {
-            // Apply Screen Shake
-            ctx.save();
-            if(screenShake > 0) {
-                let dx = (Math.random()-0.5) * screenShake;
-                let dy = (Math.random()-0.5) * screenShake;
-                ctx.translate(dx, dy);
-                screenShake *= 0.9; // decay
-                if(screenShake < 0.5) screenShake = 0;
+        function drawSun(x,y,charge){
+            let t=performance.now()*0.005, pulse=40 + Math.sin(t)*5 + charge*10;
+            ctx.beginPath();ctx.arc(x,y,pulse,0,Math.PI*2);ctx.fillStyle='#fde047';ctx.shadowBlur=60+charge*20;ctx.shadowColor='#f97316';ctx.fill();ctx.shadowBlur=0;
+            ctx.beginPath();ctx.arc(x,y,30,0,Math.PI*2);ctx.fillStyle='#fff';ctx.fill();
+            if(charge>0.1){ctx.beginPath();ctx.arc(x,y, 38+charge*18,0,Math.PI*2);ctx.strokeStyle=`rgba(253,224,71,${0.15+charge*0.3})`;ctx.lineWidth=2+charge*2;ctx.stroke();
+                // charge ring progress
+                let pct=charge/1.5; ctx.beginPath();ctx.arc(x,y, 44, -Math.PI/2, -Math.PI/2+Math.PI*2*pct);ctx.strokeStyle='#fde047';ctx.lineWidth=3;ctx.stroke();
             }
-
-            // Draw Space
-            ctx.globalCompositeOperation = 'source-over';
-            ctx.fillStyle = 'rgba(2, 2, 5, 0.4)'; 
-            ctx.fillRect(-50, -50, width+100, height+100);
-
-            ctx.globalCompositeOperation = 'lighter';
-            
-            // Draw Stars
-            ctx.fillStyle = '#fff';
-            stars.forEach(s => {
-                s.alpha += 0.05;
-                ctx.globalAlpha = Math.abs(Math.sin(s.alpha));
-                ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, Math.PI*2); ctx.fill();
-            });
-            ctx.globalAlpha = 1;
-
-            if(gameActive) {
+            // velocity trail when thrown
+            if(player.state==='thrown'){
+                let v=Math.hypot(player.vx,player.vy);
+                if(v>6){ctx.beginPath();ctx.moveTo(x-player.vx*1.2, y-player.vy*1.2);ctx.lineTo(x,y);ctx.strokeStyle='rgba(253,224,71,0.35)';ctx.lineWidth=4;ctx.stroke()}
+            }
+        }
+        function animate(now){
+            frameCount++; if(now-lastFrame>500){fpsEl.textContent=Math.round(frameCount*1000/(now-lastFrame));frameCount=0;lastFrame=now}
+            ctx.save(); if(screenShake>0){let dx=(Math.random()-.5)*screenShake, dy=(Math.random()-.5)*screenShake; ctx.translate(dx,dy); screenShake*=0.88; if(screenShake<0.4) screenShake=0}
+            ctx.globalCompositeOperation='source-over';ctx.fillStyle='rgba(2,2,5,0.42)';ctx.fillRect(-60,-60,width+120,height+120);
+            ctx.globalCompositeOperation='lighter'; ctx.fillStyle='#fff'; stars.forEach(s=>{s.alpha+=0.05; ctx.globalAlpha=Math.abs(Math.sin(s.alpha)); ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,Math.PI*2);ctx.fill()}); ctx.globalAlpha=1;
+            if(gameActive){
                 handleInput();
-
-                // Update & Draw Targets
-                targets.forEach(t => {
-                    t.x += t.vx; t.y += t.vy;
-                    if(t.x < -50) t.x = width+50; else if (t.x > width+50) t.x = -50;
-                    if(t.y < -50) t.y = height+50; else if (t.y > height+50) t.y = -50;
-                    
-                    let grad = ctx.createRadialGradient(t.x-t.radius*0.3, t.y-t.radius*0.3, 0, t.x, t.y, t.radius);
-                    grad.addColorStop(0, '#fff'); grad.addColorStop(0.5, t.color); grad.addColorStop(1, '#000');
-                    
-                    ctx.beginPath(); ctx.arc(t.x, t.y, t.radius, 0, Math.PI*2);
-                    ctx.fillStyle = grad; ctx.fill();
-                });
-
-                // Update & Draw Player Sun
-                if (player.state === 'thrown') {
-                    player.x += player.vx;
-                    player.y += player.vy;
-                    // Wall Bounce
-                    if(player.x < 0 || player.x > width) player.vx *= -1;
-                    if(player.y < 0 || player.y > height) player.vy *= -1;
-
-                    // Collision Detection!
-                    for(let i=0; i<targets.length; i++) {
-                        let t = targets[i];
-                        let dx = player.x - t.x;
-                        let dy = player.y - t.y;
-                        let dist = Math.sqrt(dx*dx + dy*dy);
-                        if (dist < player.radius + t.radius) {
-                            // HIT!
-                            triggerBigBang((player.x + t.x)/2, (player.y + t.y)/2);
-                            break;
-                        }
+                targets.forEach(t=>{t.x+=t.vx; t.y+=t.vy; if(t.x<-50) t.x=width+50; else if(t.x>width+50) t.x=-50; if(t.y<-50) t.y=height+50; else if(t.y>height+50) t.y=-50; let g=ctx.createRadialGradient(t.x-t.radius*.3,t.y-t.radius*.3,0,t.x,t.y,t.radius); g.addColorStop(0,'#fff'); g.addColorStop(0.5,t.color); g.addColorStop(1,'#000'); ctx.beginPath();ctx.arc(t.x,t.y,t.radius,0,Math.PI*2);ctx.fillStyle=g;ctx.fill()});
+                if(player.state==='thrown'){
+                    player.x+=player.vx; player.y+=player.vy; if(player.x<0||player.x>width) player.vx*=-1; if(player.y<0||player.y>height) player.vy*=-1;
+                    for(let i=0;i<targets.length;i++){let t=targets[i], dx=player.x-t.x, dy=player.y-t.y, d=Math.hypot(dx,dy); if(d<player.radius+t.radius){let power=player.chargePower||1; triggerBigBang((player.x+t.x)/2,(player.y+t.y)/2,power); break}}
+                    player.vx*=0.998; player.vy*=0.998;
+                } else if(player.state==='idle'){player.x+=Math.sin(performance.now()*0.001)*0.4; player.y+=Math.cos(performance.now()*0.001)*0.4}
+                if(player.state!=='hidden') drawSun(player.x,player.y, player.charge||0);
+                // reticle for input
+                drawReticle(ctx, input.rawX||input.x, input.rawY||input.y, player.x, player.y);
+            }
+            particles.forEach((p,idx)=>{p.x+=p.vx; p.y+=p.vy; p.vx*=.96; p.vy*=.96; p.life-=p.dec; if(p.life<=0) particles.splice(idx,1); else {ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fillStyle=`rgba(255,255,255,${p.life})`;ctx.shadowBlur=9;ctx.shadowColor=p.color;ctx.fill();ctx.shadowBlur=0}});
+            shockwaves.forEach((sw,idx)=>{ctx.beginPath();ctx.arc(sw.x,sw.y,sw.r,0,Math.PI*2);ctx.strokeStyle=`rgba(255,255,255,${sw.alpha})`;ctx.lineWidth=14*sw.alpha;ctx.stroke();sw.r+=sw.dr;sw.alpha-=0.021; if(sw.alpha<=0) shockwaves.splice(idx,1)});
+            ctx.restore(); requestAnimationFrame(animate);
+        }
+        function drawReticle(ctx, rx,ry, px,py){
+            // only when not thrown
+            if(player.state==='hidden') return;
+            ctx.globalCompositeOperation='source-over';
+            ctx.beginPath();ctx.moveTo(rx,ry);ctx.lineTo(px,py);ctx.strokeStyle= handActive?'rgba(239,68,68,0.32)':'rgba(100,116,139,0.22)';ctx.lineWidth=1;ctx.setLineDash([4,4]);ctx.stroke();ctx.setLineDash([]);
+            ctx.beginPath();ctx.arc(px,py, handActive?16:12,0,Math.PI*2);ctx.strokeStyle= player.state==='held'?'#f97316':'#fde047';ctx.lineWidth=1.5;ctx.globalAlpha=.9;ctx.stroke();ctx.globalAlpha=1;
+            ctx.beginPath();ctx.arc(rx,ry,4,0,Math.PI*2);ctx.fillStyle=handActive?'rgba(239,68,68,0.9)':'rgba(148,163,184,0.7)';ctx.fill();
+            ctx.globalCompositeOperation='lighter';
+        }
+        const video=document.getElementById('webcam');
+        let lastHandTime=0;
+        function onHandResults(res){
+            let now=performance.now();
+            if(res.multiHandLandmarks && res.multiHandLandmarks.length>0){
+                let lm=res.multiHandLandmarks[0];
+                let rawX=(1-lm[9].x)*width, rawY=lm[9].y*height;
+                // velocity + prediction before lerp
+                handVel.x=rawX-lastRaw.x; handVel.y=rawY-lastRaw.y; lastRaw.x=rawX; lastRaw.y=rawY;
+                let predX=rawX+handVel.x*0.7, predY=rawY+handVel.y*0.7;
+                let spd=Math.hypot(handVel.x,handVel.y); let l=spd>20?0.5:spd>8?0.4:0.32;
+                input.rawX=rawX; input.rawY=rawY;
+                input.x+=(predX-input.x)*l; input.y+=(predY-input.y)*l;
+                latEl.textContent=Math.round(now-lastHandTime);
+                let wrist=lm[0], fingers=[lm[8],lm[12],lm[16],lm[20]], d=0; fingers.forEach(f=>d+=Math.hypot(f.x-wrist.x,f.y-wrist.y)); d/=4;
+                if(d<0.22){palmStreak=0;fistStreak=Math.min(8,fistStreak+1); if(fistStreak>3) input.active=true;}
+                else if(d>0.28){fistStreak=0;palmStreak=Math.min(8,palmStreak+1); if(palmStreak>3) input.active=false;}
+                handActive=true;handLost=0;
+                document.getElementById('gesture-hint').textContent= input.active?'· hold to charge':'· release to throw';
+                // pinch -> small bang
+                let pinch=Math.hypot(lm[4].x-lm[8].x, lm[4].y-lm[8].y);
+                if(pinch<0.04 && now-lastPinch>650){lastPinch=now; triggerBigBang(input.x,input.y,0.7); if(navigator.vibrate) navigator.vibrate(20)}
+                // double fist -> big bang
+                if(res.multiHandLandmarks.length===2){
+                    let lm2=res.multiHandLandmarks[1];
+                    let w2=lm2[0], f2=[lm2[8],lm2[12],lm2[16],lm2[20]], d2=0; f2.forEach(f=>d2+=Math.hypot(f.x-w2.x,f.y-w2.y)); d2/=4;
+                    if(d<0.22 && d2<0.22 && now-lastPinch>900){lastPinch=now; triggerBigBang((input.x+ (1-lm2[9].x)*width)/2, (input.y+ lm2[9].y*height)/2, 1.6); if(navigator.vibrate) navigator.vibrate([30,40,50])}
+                    // palm push -> repel
+                    let palmOpen = d>0.32 && d2>0.32;
+                    if(palmOpen){
+                        let cx=(input.x + (1-lm2[9].x)*width)/2, cy=(input.y + lm2[9].y*height)/2;
+                        for(let t of targets){let dx=t.x-cx, dy=t.y-cy, dist=Math.hypot(dx,dy)||1; let f= Math.max(0, (300-dist)/300)*1.8; t.vx+= (dx/dist)*f*6; t.vy+= (dy/dist)*f*6}
                     }
-                } else if (player.state === 'idle') {
-                    // Gentle float when not interacting
-                    player.x += Math.sin(performance.now()*0.001) * 0.5;
-                    player.y += Math.cos(performance.now()*0.001) * 0.5;
                 }
-
-                if(player.state !== 'hidden') drawSun(player.x, player.y);
-            }
-
-            // Draw Explosion Particles & Shockwaves
-            particles.forEach((p, index) => {
-                p.x += p.vx; p.y += p.vy;
-                p.vx *= 0.95; p.vy *= 0.95; // Friction
-                p.life -= 0.01;
-                if(p.life <= 0) particles.splice(index, 1);
-                else {
-                    ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI*2);
-                    ctx.fillStyle = `rgba(255, 255, 255, ${p.life})`;
-                    ctx.shadowBlur = 10; ctx.shadowColor = p.color;
-                    ctx.fill(); ctx.shadowBlur = 0;
-                }
-            });
-
-            shockwaves.forEach((sw, index) => {
-                ctx.beginPath(); ctx.arc(sw.x, sw.y, sw.r, 0, Math.PI*2);
-                ctx.strokeStyle = `rgba(255, 255, 255, ${sw.alpha})`;
-                ctx.lineWidth = 15 * sw.alpha; ctx.stroke();
-                sw.r += sw.dr; sw.alpha -= 0.02;
-                if(sw.alpha <= 0) shockwaves.splice(index, 1);
-            });
-
-            ctx.restore(); // Restore from screen shake
-            requestAnimationFrame(animate);
-        }
-
-        /** --- AI HAND TRACKING --- */
-        const videoElement = document.getElementById('webcam');
-        function onHandResults(results) {
-            if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
-                const lm = results.multiHandLandmarks[0];
-                input.x += ((1 - lm[9].x) * width - input.x) * 0.3; 
-                input.y += (lm[9].y * height - input.y) * 0.3;
-
-                // Check Fist (Distance from wrist to fingertips)
-                const wrist = lm[0];
-                const fingers = [lm[8], lm[12], lm[16], lm[20]]; 
-                let dist = 0;
-                fingers.forEach(f => dist += Math.sqrt(Math.pow(f.x - wrist.x, 2) + Math.pow(f.y - wrist.y, 2)));
-                dist /= 4;
-
-                input.active = (dist < 0.25); // True = Fist (Grab), False = Palm (Throw)
             } else {
-                if(!mouseHover) input.active = false;
+                handLost++; if(handLost>10 && !mouseHover){handActive=false; input.active=false; document.getElementById('gesture-hint').textContent='· fist to grab';}
             }
+            lastHandTime=now;
         }
-
-        const hands = new Hands({locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`});
-        hands.setOptions({ maxNumHands: 1, modelComplexity: 1, minDetectionConfidence: 0.6, minTrackingConfidence: 0.6 });
+        const hands=new Hands({locateFile:f=>`https://cdn.jsdelivr.net/npm/@mediapipe/hands/${f}`});
+        hands.setOptions({maxNumHands:2,modelComplexity:0,minDetectionConfidence:0.5,minTrackingConfidence:0.5});
         hands.onResults(onHandResults);
-
-        /** --- FALLBACK MOUSE CONTROLS --- */
-        let mouseHover = false;
-        window.addEventListener('mousemove', (e) => {
-            mouseHover = true;
-            input.x += (e.clientX - input.x) * 0.5;
-            input.y += (e.clientY - input.y) * 0.5;
-            clearTimeout(window.mouseTimer);
-            window.mouseTimer = setTimeout(() => mouseHover = false, 200);
-        });
-        window.addEventListener('mousedown', () => input.active = true);
-        window.addEventListener('mouseup', () => input.active = false);
-        window.addEventListener('touchstart', (e) => { input.x = e.touches[0].clientX; input.y = e.touches[0].clientY; input.active = true; });
-        window.addEventListener('touchend', () => input.active = false);
-
-        /** --- BOOT --- */
-        document.getElementById('start-btn').addEventListener('click', () => {
-            document.getElementById('init-screen').style.opacity = '0';
-            setTimeout(() => document.getElementById('init-screen').style.display = 'none', 500);
-            
+        window.addEventListener('mousemove',e=>{if(handActive) return; let rx=e.clientX, ry=e.clientY; let dx=rx-input.x, dy=ry-input.y; let s=Math.hypot(dx,dy); let l=s>20?0.5:0.33; input.x+=(rx-input.x)*l; input.y+=(ry-input.y)*l; input.rawX=rx; input.rawY=ry; mouseHover=true;clearTimeout(window.mouseTimer);window.mouseTimer=setTimeout(()=>mouseHover=false,200)});
+        window.addEventListener('mousedown',()=>{if(!handActive) input.active=true});
+        window.addEventListener('mouseup',()=>{if(!handActive) input.active=false});
+        window.addEventListener('touchstart',e=>{if(handActive) return; input.x=input.rawX=e.touches[0].clientX; input.y=input.rawY=e.touches[0].clientY; input.active=true},{passive:true});
+        window.addEventListener('touchend',()=>{if(!handActive) input.active=false});
+        document.getElementById('start-btn').addEventListener('click',()=>{
+            document.getElementById('init-screen').style.opacity='0';setTimeout(()=>document.getElementById('init-screen').style.display='none',500);
             Audio.init();
-            
-            const camera = new Camera(videoElement, {
-                onFrame: async () => { await hands.send({image: videoElement}); },
-                width: 320, height: 240
-            });
+            let lastSend=0;
+            const camera=new Camera(video,{onFrame:async()=>{let n=performance.now(); if(n-lastSend<32) return; lastSend=n; await hands.send({image:video})},width:320,height:240});
             camera.start();
-
-            animate();
+            requestAnimationFrame(animate);
         });
     </script>
 </body>
