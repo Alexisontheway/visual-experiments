@@ -1,11 +1,11 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Neural Blockchain Interface</title>
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils@0.3.1640029074/camera_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1646424915/hands.js" crossorigin="anonymous"></script>
     <style>
         :root { --bg:#050508; --text:#e2e8f0; --ui-bg:rgba(15,23,42,.6); --ui-border:rgba(56,189,248,.3); }
         *{margin:0;padding:0;box-sizing:border-box;user-select:none}
@@ -32,19 +32,19 @@
     <canvas id="mainCanvas"></canvas>
     <div id="ui-layer">
         <div class="top-bar">
-            <div class="glass-panel"> <span style="color:#94a3b8">INTERFACE //</span> LINKED-LIST MATRIX<br><span style="font-size:.65rem;color:#64748b;display:block;margin-top:4px">FIST: compress · PALM: expand · PINCH: spawn · SWIPE: cut · mouse fallback</span></div>
-            <div class="glass-panel" style="text-align:right">STRANDS: <span id="strand-count" style="color:#38bdf8">0</span> · NODES: <span id="node-count" style="color:#38bdf8">0</span><br><span style="font-size:.65rem;color:#64748b">FPS <span id="fps" style="color:#e2e8f0">--</span> · LAT <span id="lat" style="color:#e2e8f0">--</span>ms</span></div>
+            <div class="glass-panel"> <span style="color:#94a3b8">INTERFACE //</span> LINKED-LIST MATRIX<br><span style="font-size:.65rem;color:#64748b;display:block;margin-top:4px">FIST: compress Â· PALM: expand Â· PINCH: spawn Â· SWIPE: cut Â· mouse fallback</span></div>
+            <div class="glass-panel" style="text-align:right">STRANDS: <span id="strand-count" style="color:#38bdf8">0</span> Â· NODES: <span id="node-count" style="color:#38bdf8">0</span><br><span style="font-size:.65rem;color:#64748b">FPS <span id="fps" style="color:#e2e8f0">--</span> Â· LAT <span id="lat" style="color:#e2e8f0">--</span>ms</span></div>
         </div>
         <div class="bottom-bar">
-            <div class="glass-panel" style="display:flex;align-items:center;font-weight:bold"><span class="indicator" id="state-dot" style="background:#f59e0b;box-shadow:0 0 10px #f59e0b"></span>STATE: <span id="state-text" style="color:#f59e0b">SEEKING SIGNAL</span><span id="gesture-hint" style="margin-left:10px;color:#64748b;font-weight:400;letter-spacing:0">· move hand to take control</span></div>
+            <div class="glass-panel" style="display:flex;align-items:center;font-weight:bold"><span class="indicator" id="state-dot" style="background:#f59e0b;box-shadow:0 0 10px #f59e0b"></span>STATE: <span id="state-text" style="color:#f59e0b">SEEKING SIGNAL</span><span id="gesture-hint" style="margin-left:10px;color:#64748b;font-weight:400;letter-spacing:0">Â· move hand to take control</span></div>
             <div id="cam-wrapper"><video id="webcam" autoplay playsinline></video><div class="cam-overlay"></div></div>
         </div>
     </div>
     <div id="init-screen">
         <h1>NEURAL BLOCKCHAIN</h1>
-        <p>Low-latency hand control. Fist → singularity compress, Palm → network expand, <b>Pinch</b> thumb+index → spawn strand, <b>Swipe</b> fast → cut. Mouse/touch works too.</p>
+        <p>Low-latency hand control. Fist â†’ singularity compress, Palm â†’ network expand, <b>Pinch</b> thumb+index â†’ spawn strand, <b>Swipe</b> fast â†’ cut. Mouse/touch works too.</p>
         <button id="start-btn">Initialize Connection</button>
-        <p style="margin-top:14px;color:#64748b;font-size:.75rem">Allow camera · <span class="kbd">Esc</span> to recalibrate</p>
+        <p style="margin-top:14px;color:#64748b;font-size:.75rem">Allow camera Â· <span class="kbd">Esc</span> to recalibrate</p>
     </div>
     <script>
         let width=innerWidth, height=innerHeight;
@@ -82,7 +82,7 @@
             for(let i=shockwaves.length-1;i>=0;i--){let sw=shockwaves[i];ctx.beginPath();ctx.arc(sw.x,sw.y,sw.r,0,Math.PI*2);ctx.strokeStyle=`rgba(${sw.color},${sw.alpha})`;ctx.lineWidth=4;ctx.stroke();sw.r+=18;sw.alpha-=.032;if(sw.alpha<=0)shockwaves.splice(i,1)}
             for(let i=0;i<strands.length;i++){strands[i].update(target.x,target.y,currentState);strands[i].draw(ctx,currentState)}
             if(currentState==='palm'){ctx.lineWidth=.6;for(let i=0;i<strands.length;i++)for(let j=i+1;j<strands.length;j++){let n1=strands[i].nodes[0],n2=strands[j].nodes[0],dx=n1.x-n2.x,dy=n1.y-n2.y,ds=dx*dx+dy*dy;if(ds<40000){let a=1-Math.sqrt(ds)/200;ctx.beginPath();ctx.moveTo(n1.x,n1.y);ctx.lineTo(n2.x,n2.y);ctx.strokeStyle=`rgba(16,185,129,${a*.5})`;ctx.stroke()}}}
-            // reticle — you are in control
+            // reticle â€” you are in control
             drawReticle(ctx, rawTarget.x, rawTarget.y, target.x, target.y, currentState, handActive);
             requestAnimationFrame(animate);
         }
@@ -115,9 +115,9 @@
                 latEl.textContent=Math.round(now-lastHandTime);
                 // gesture hysteresis
                 let wrist=lm[0], fingers=[lm[8],lm[12],lm[16],lm[20]], d=0; fingers.forEach(f=>d+=Math.hypot(f.x-wrist.x,f.y-wrist.y)); d/=4;
-                if(d<0.22){palmStreak=0;fistStreak=Math.min(8,fistStreak+1); if(fistStreak>3) currentState='fist';}
-                else if(d>0.28){fistStreak=0;palmStreak=Math.min(8,palmStreak+1); if(palmStreak>3) currentState='palm';}
-                document.getElementById('gesture-hint').textContent = currentState==='fist'?'· fist compressing': currentState==='palm'?'· palm expanding':'·';
+                if(d<0.22){palmStreak=0;fistStreak=Math.min(8,fistStreak+1); if(fistStreak>5) currentState='fist';}
+                else if(d>0.28){fistStreak=0;palmStreak=Math.min(8,palmStreak+1); if(palmStreak>5) currentState='palm';}
+                document.getElementById('gesture-hint').textContent = currentState==='fist'?'Â· fist compressing': currentState==='palm'?'Â· palm expanding':'Â·';
                 // pinch -> spawn
                 let pinch=Math.hypot(lm[4].x-lm[8].x, lm[4].y-lm[8].y);
                 if(pinch<0.045 && now-lastPinch>500){lastPinch=now; spawnStrandAt(rawTarget.x,rawTarget.y); createShockwave(rawTarget.x,rawTarget.y,'56,189,248'); if(navigator.vibrate) navigator.vibrate(20)}
@@ -134,7 +134,7 @@
                     }
                 }
             } else {
-                handLost++; if(handLost>10 && !mouseActive){handActive=false; if(currentState!=='drift'){palmStreak=fistStreak=0} if(!mouseActive) currentState='drift'; document.getElementById('gesture-hint').textContent='· move hand to take control';}
+                handLost++; if(handLost>5 && !mouseActive){handActive=false; if(currentState!=='drift'){palmStreak=fistStreak=0} if(!mouseActive) currentState='drift'; document.getElementById('gesture-hint').textContent='Â· move hand to take control';}
             }
             lastHandTime=now;
         }
@@ -171,3 +171,4 @@
     </script>
 </body>
 </html>
+

@@ -1,11 +1,11 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Big Bang Thrower</title>
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils@0.3.1640029074/camera_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1646424915/hands.js" crossorigin="anonymous"></script>
     <style>
         :root{--bg:#020205;--ui-bg:rgba(10,15,30,.7);--ui-border:rgba(239,68,68,.4)}
         *{margin:0;padding:0;box-sizing:border-box;user-select:none}
@@ -33,11 +33,11 @@
     <canvas id="mainCanvas"></canvas>
     <div id="ui-layer">
         <div class="top-bar">
-            <div class="glass-panel"> <span style="color:#ef4444">WEAPON //</span> THE SUN<br><span style="font-size:.65rem;color:#94a3b8;display:block;margin-top:4px">FIST hold=charge · release=throw · PINCH=small bang · PALM=push</span><div id="charge-bar"><div id="charge-fill"></div></div></div>
-            <div class="glass-panel" style="text-align:right">BIG BANGS: <span id="bang-count" style="color:#ef4444">0</span><br><span style="font-size:.65rem;color:#64748b">FPS <span id="fps" style="color:#e2e8f0">--</span> · LAT <span id="lat" style="color:#e2e8f0">--</span>ms</span></div>
+            <div class="glass-panel"> <span style="color:#ef4444">WEAPON //</span> THE SUN<br><span style="font-size:.65rem;color:#94a3b8;display:block;margin-top:4px">FIST hold=charge Â· release=throw Â· PINCH=small bang Â· PALM=push</span><div id="charge-bar"><div id="charge-fill"></div></div></div>
+            <div class="glass-panel" style="text-align:right">BIG BANGS: <span id="bang-count" style="color:#ef4444">0</span><br><span style="font-size:.65rem;color:#64748b">FPS <span id="fps" style="color:#e2e8f0">--</span> Â· LAT <span id="lat" style="color:#e2e8f0">--</span>ms</span></div>
         </div>
         <div class="bottom-bar">
-            <div class="glass-panel" id="status-panel" style="color:#fde047;font-weight:bold">WAITING FOR HAND... <span id="gesture-hint" style="color:#64748b;font-weight:400">· fist to grab</span></div>
+            <div class="glass-panel" id="status-panel" style="color:#fde047;font-weight:bold">WAITING FOR HAND... <span id="gesture-hint" style="color:#64748b;font-weight:400">Â· fist to grab</span></div>
             <div id="cam-wrapper"><video id="webcam" autoplay playsinline></video></div>
         </div>
     </div>
@@ -45,7 +45,7 @@
         <h1>THE BIG BANG</h1>
         <p class="subtitle">Throw the sun. Hold longer = bigger boom. Try palm push & pinch pop.</p>
         <button id="start-btn">Start Simulation</button>
-        <p style="margin-top:12px;color:#64748b;font-size:.75rem">Allow camera · mouse hold+release also throws · <b>double-fist</b> = instant bang</p>
+        <p style="margin-top:12px;color:#64748b;font-size:.75rem">Allow camera Â· mouse hold+release also throws Â· <b>double-fist</b> = instant bang</p>
     </div>
     <script>
         const canvas=document.getElementById('mainCanvas'), ctx=canvas.getContext('2d'), flashOverlay=document.getElementById('flash');
@@ -62,7 +62,7 @@
         let particles=[], shockwaves=[], stars=Array.from({length:150},()=>({x:Math.random()*width,y:Math.random()*height,r:Math.random()*1.5,alpha:Math.random()}));
         function triggerBigBang(x,y,power=1){
             gameActive=false;bangCount++;document.getElementById('bang-count').innerText=bangCount;
-            document.getElementById('status-panel').innerText=`BOOM ×${power.toFixed(1)} — REBOOT...`;document.getElementById('status-panel').style.color='#fff';
+            document.getElementById('status-panel').innerText=`BOOM Ã—${power.toFixed(1)} â€” REBOOT...`;document.getElementById('status-panel').style.color='#fff';
             Audio.playBigBang(power); flashOverlay.style.transition='none';flashOverlay.style.opacity='1'; setTimeout(()=>{flashOverlay.style.transition='opacity 1.6s ease-out';flashOverlay.style.opacity='0'},40);
             screenShake= 18 + power*34;
             let rings = power>1.4?3:2; for(let i=0;i<rings;i++) shockwaves.push({x,y,r:10+i*18,dr: 18 + power*10,alpha:1});
@@ -86,8 +86,8 @@
                 // snappy follow with prediction
                 player.x+=(input.x - player.x)*0.42; player.y+=(input.y - player.y)*0.42;
                 let pct=Math.round(player.charge/1.5*100);
-                document.getElementById('status-panel').innerText=`SUN GRABBED — CHARGE ${pct}%`; document.getElementById('status-panel').style.color='#f97316';
-                document.getElementById('gesture-hint').textContent='· release to throw';
+                document.getElementById('status-panel').innerText=`SUN GRABBED â€” CHARGE ${pct}%`; document.getElementById('status-panel').style.color='#f97316';
+                document.getElementById('gesture-hint').textContent='Â· release to throw';
             } else if(player.state==='held' && !input.active){
                 player.state='thrown';
                 let old=player.history[0]||{x:input.x,y:input.y};
@@ -100,7 +100,7 @@
                 if(spd<4){let ang=Math.random()*Math.PI*2; vx=Math.cos(ang)*(6+power*8); vy=Math.sin(ang)*(6+power*8)}
                 player.vx=vx; player.vy=vy;
                 player.chargePower=power;
-                document.getElementById('status-panel').innerText=`LAUNCHED — PWR ${power.toFixed(1)}`; document.getElementById('status-panel').style.color='#ef4444';
+                document.getElementById('status-panel').innerText=`LAUNCHED â€” PWR ${power.toFixed(1)}`; document.getElementById('status-panel').style.color='#ef4444';
                 document.getElementById('charge-fill').style.width='0%';
                 player.charge=0;
             }
@@ -164,10 +164,10 @@
                 input.x+=(predX-input.x)*l; input.y+=(predY-input.y)*l;
                 latEl.textContent=Math.round(now-lastHandTime);
                 let wrist=lm[0], fingers=[lm[8],lm[12],lm[16],lm[20]], d=0; fingers.forEach(f=>d+=Math.hypot(f.x-wrist.x,f.y-wrist.y)); d/=4;
-                if(d<0.22){palmStreak=0;fistStreak=Math.min(8,fistStreak+1); if(fistStreak>3) input.active=true;}
-                else if(d>0.28){fistStreak=0;palmStreak=Math.min(8,palmStreak+1); if(palmStreak>3) input.active=false;}
+                if(d<0.22){palmStreak=0;fistStreak=Math.min(8,fistStreak+1); if(fistStreak>5) input.active=true;}
+                else if(d>0.28){fistStreak=0;palmStreak=Math.min(8,palmStreak+1); if(palmStreak>5) input.active=false;}
                 handActive=true;handLost=0;
-                document.getElementById('gesture-hint').textContent= input.active?'· hold to charge':'· release to throw';
+                document.getElementById('gesture-hint').textContent= input.active?'Â· hold to charge':'Â· release to throw';
                 // pinch -> small bang
                 let pinch=Math.hypot(lm[4].x-lm[8].x, lm[4].y-lm[8].y);
                 if(pinch<0.04 && now-lastPinch>650){lastPinch=now; triggerBigBang(input.x,input.y,0.7); if(navigator.vibrate) navigator.vibrate(20)}
@@ -184,7 +184,7 @@
                     }
                 }
             } else {
-                handLost++; if(handLost>10 && !mouseHover){handActive=false; input.active=false; document.getElementById('gesture-hint').textContent='· fist to grab';}
+                handLost++; if(handLost>5 && !mouseHover){handActive=false; input.active=false; document.getElementById('gesture-hint').textContent='Â· fist to grab';}
             }
             lastHandTime=now;
         }
@@ -207,3 +207,4 @@
     </script>
 </body>
 </html>
+

@@ -1,11 +1,11 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Stellar Gravity Engine</title>
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils@0.3.1640029074/camera_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1646424915/hands.js" crossorigin="anonymous"></script>
     <style>
         :root{--bg:#020205;--text:#e2e8f0;--ui-bg:rgba(10,15,30,.6);--ui-border:rgba(253,224,71,.3)}
         *{margin:0;padding:0;box-sizing:border-box;user-select:none}
@@ -31,11 +31,11 @@
     <canvas id="mainCanvas"></canvas>
     <div id="ui-layer">
         <div class="top-bar">
-            <div class="glass-panel"> <span style="color:#94a3b8">ASTROMETRICS //</span> GRAVITY ENGINE<br><span style="font-size:.65rem;color:#64748b;display:block;margin-top:4px">PINCH: spawn · FIST hold: black hole · SPREAD: expand orbits · mouse fallback</span></div>
-            <div class="glass-panel" style="text-align:right">PLANETS: <span id="planet-count" style="color:#fde047">0</span> · STARS: <span style="color:#94a3b8">200</span><br><span style="font-size:.65rem;color:#64748b">FPS <span id="fps" style="color:#e2e8f0">--</span> · LAT <span id="lat" style="color:#e2e8f0">--</span>ms</span></div>
+            <div class="glass-panel"> <span style="color:#94a3b8">ASTROMETRICS //</span> GRAVITY ENGINE<br><span style="font-size:.65rem;color:#64748b;display:block;margin-top:4px">PINCH: spawn Â· FIST hold: black hole Â· SPREAD: expand orbits Â· mouse fallback</span></div>
+            <div class="glass-panel" style="text-align:right">PLANETS: <span id="planet-count" style="color:#fde047">0</span> Â· STARS: <span style="color:#94a3b8">200</span><br><span style="font-size:.65rem;color:#64748b">FPS <span id="fps" style="color:#e2e8f0">--</span> Â· LAT <span id="lat" style="color:#e2e8f0">--</span>ms</span></div>
         </div>
         <div class="bottom-bar">
-            <div class="glass-panel" style="display:flex;align-items:center;font-weight:bold"><span class="indicator" id="state-dot" style="background:#94a3b8;box-shadow:0 0 10px #94a3b8"></span>STATE: <span id="state-text" style="color:#94a3b8">ZERO GRAVITY</span><span id="gesture-hint" style="margin-left:10px;color:#64748b;font-weight:400">· move hand to take control</span></div>
+            <div class="glass-panel" style="display:flex;align-items:center;font-weight:bold"><span class="indicator" id="state-dot" style="background:#94a3b8;box-shadow:0 0 10px #94a3b8"></span>STATE: <span id="state-text" style="color:#94a3b8">ZERO GRAVITY</span><span id="gesture-hint" style="margin-left:10px;color:#64748b;font-weight:400">Â· move hand to take control</span></div>
             <div id="cam-wrapper"><video id="webcam" autoplay playsinline></video><div class="cam-overlay"></div></div>
         </div>
     </div>
@@ -43,7 +43,7 @@
         <h1>STELLAR GRAVITY ENGINE</h1>
         <p>Palm = sun orbit, Fist hold = black hole singularity, <b>Pinch</b> to spawn planet, <b>Spread both hands</b> to expand orbits, <b>Swipe</b> to sling. Latency cut to ~20ms.</p>
         <button id="start-btn">Ignite Star</button>
-        <p style="margin-top:12px;color:#64748b;font-size:.75rem">Allow camera · mouse spawns with click</p>
+        <p style="margin-top:12px;color:#64748b;font-size:.75rem">Allow camera Â· mouse spawns with click</p>
     </div>
     <script>
         let width=innerWidth, height=innerHeight;
@@ -105,9 +105,9 @@
                 rawTarget.x+=(predX-rawTarget.x)*l; rawTarget.y+=(predY-rawTarget.y)*l;
                 latEl.textContent=Math.round(now-lastHandTime);
                 let wrist=lm[0], fingers=[lm[8],lm[12],lm[16],lm[20]], d=0; fingers.forEach(f=>d+=Math.hypot(f.x-wrist.x,f.y-wrist.y)); d/=4;
-                if(d<0.22){palmStreak=0;fistStreak=Math.min(8,fistStreak+1); if(fistStreak>3) currentState='fist';}
-                else if(d>0.28){fistStreak=0;palmStreak=Math.min(8,palmStreak+1); if(palmStreak>3) currentState='palm';}
-                document.getElementById('gesture-hint').textContent= currentState==='fist'? '· fist hold to grow': currentState==='palm'?'· palm to orbit':'·';
+                if(d<0.22){palmStreak=0;fistStreak=Math.min(8,fistStreak+1); if(fistStreak>5) currentState='fist';}
+                else if(d>0.28){fistStreak=0;palmStreak=Math.min(8,palmStreak+1); if(palmStreak>5) currentState='palm';}
+                document.getElementById('gesture-hint').textContent= currentState==='fist'? 'Â· fist hold to grow': currentState==='palm'?'Â· palm to orbit':'Â·';
                 // pinch spawn
                 let pinch=Math.hypot(lm[4].x-lm[8].x, lm[4].y-lm[8].y);
                 if(pinch<0.045 && now-lastPinch>420){lastPinch=now; let vx=handVel.x*0.28, vy=handVel.y*0.28; spawnPlanetAt(rawTarget.x,rawTarget.y, vx,vy); if(navigator.vibrate) navigator.vibrate(18)}
@@ -130,7 +130,7 @@
                     let nearest=null, nd=1e9; for(let p of planets){let dd=Math.hypot(p.x-rawTarget.x,p.y-rawTarget.y); if(dd<nd){nd=dd;nearest=p}} if(nearest && nd<180){nearest.vx+=handVel.x*0.5; nearest.vy+=handVel.y*0.5; lastSpawn=now}
                 }
             } else {
-                handLost++; if(handLost>10 && !mouseActive){handActive=false; if(!mouseActive) currentState='drift'; document.getElementById('gesture-hint').textContent='· move hand to take control'}
+                handLost++; if(handLost>5 && !mouseActive){handActive=false; if(!mouseActive) currentState='drift'; document.getElementById('gesture-hint').textContent='Â· move hand to take control'}
             }
             lastHandTime=now;
         }
@@ -159,3 +159,4 @@
     </script>
 </body>
 </html>
+
